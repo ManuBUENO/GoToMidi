@@ -269,7 +269,7 @@ void guiClass::toogleButton(int btnID)
       else
       {
         //Go to main menu state
-        this->setState(STATE_MAINMENU);
+        this->setState(STATE_STOPPING);
         //change appearance
         c_imgBtn3 = Mat(BTN3_IMG_H, BTN3_IMG_W, CV_8UC3, Scalar(0,255,0));
         putText(c_imgBtn3,"Run recognition", Point2f(20,20),

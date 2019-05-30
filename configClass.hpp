@@ -61,6 +61,7 @@
 #define STATE_RUNNING	    3
 #define STATE_SAVECONFIG    4
 #define STATE_CONFIGPARAMS  5
+#define STATE_STOPPING      6
 
 class configClass
 {

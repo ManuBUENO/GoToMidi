@@ -29,7 +29,6 @@ void processClass::init(guiClass* ptrMainGUI, configClass * ptrMainConfig)
 
 Mat processClass::preprocess(Mat image)
 {
-
     Mat fix;
     Mat imageTmp;
     image.copyTo(imageTmp);

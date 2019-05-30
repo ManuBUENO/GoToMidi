@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <string>
 
@@ -102,7 +101,6 @@ void onMouse(int event, int x, int y, int flag, void* ptrGUI)
     }
 }
 
-
 int main(int argc, char** argv)
 {
 	//DEBUG get filename
@@ -132,23 +130,11 @@ int main(int argc, char** argv)
     //// Init config
     mainConfig.init();
 
-    /* DEBUG get image test----------------start
-	imageSrc = imread(filename, 1);
-    
-	if( imageSrc.empty() )
-	{
-	    cout << "Couldn't load " << filename << endl;
-        return 0;
-	} 
-    / DEBUG get image test----------------end */
-
     //// Get first image
     cam>>imageSrc;
 
-
     //// Init GUI
     mainGUI.init("Go-board reader V1.0",&mainConfig);
-
     
     //// Init process 
     mainProcess.init(&mainGUI,&mainConfig);
@@ -231,6 +217,11 @@ int main(int argc, char** argv)
                     mainGUI.updateDownImg(imageDst);
                 }
                 break;
+            }
+            case STATE_STOPPING:
+            {
+                mainMidi.notesOff();
+                mainGUI.setState(STATE_MAINMENU);
             }
             default:
                 break;
