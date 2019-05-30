@@ -6,7 +6,7 @@
 
 #define MIDIPORTNAME 	"MIDI_GO_OUT"
 #define NOTE_ZERO	 	36 //36 //C1
-#define NOTE_ATTACK	 	60
+#define NOTE_ATTACK	 	100 
 
 class midiClass
 {

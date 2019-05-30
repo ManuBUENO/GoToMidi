@@ -14,7 +14,7 @@
 
 
 // Camera index 
-#define CAMERA_INDEX    1
+#define CAMERA_INDEX    0
 
 // Go board dimensions in cm. Change left, bottom, right, top edges and grid size
 #define GO_EDGEL_CM     4.6

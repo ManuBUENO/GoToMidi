@@ -1,8 +1,8 @@
-point0 : 0.275580	0.604615
-point1 : 0.291951	0.790769
-point2 : 0.461119	0.790769
-point3 : 0.435198	0.581538
-contrast : 1.000000
-brightness : 0.000000
-threshold_black_stone : 0.300000
-threshold_white_stone : 0.700000
+point0 : 0.133697	0.053846
+point1 : 0.025921	0.938462
+point2 : 0.774898	0.956923
+point3 : 0.738063	0.055385
+contrast : 1.200000
+brightness : -10.000000
+threshold_black_stone : 0.250000
+threshold_white_stone : 0.960000
