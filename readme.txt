@@ -21,7 +21,8 @@ Configuration
 
 	- For Linux, Jack and qjackctl needs to be configurated (check some tutos)
 
-Compliatione CAMERA_INDEX 1
+Compliation:
+
 	Run make
 	If compliation fails, check that library and include paths are correct in the makefile.
 
@@ -33,7 +34,7 @@ Troubleshooting:
 
 	"HIGHGUI ERROR: V4L: index 1 is not correct!"
 	--> Webcam flux unknown. by default, flux "/dev/video1" is opened.
-	--> You can change the /dev/video index in "configClass.hpp" #define CAMERA_INDEX 1
+	--> You can change the /dev/video index in "configClass.hpp" #define CAMERA_INDEX 1 
 
 	MidiOutJack::initialize: JACK server not running?
 	--> Midi API jack not running.
