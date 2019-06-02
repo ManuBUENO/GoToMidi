@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 
+//#include <videoio.hpp>
+
 #include "RtMidi.h"
 #include "guiClass.hpp"
 #include "configClass.hpp"
@@ -103,8 +105,8 @@ void onMouse(int event, int x, int y, int flag, void* ptrGUI)
 
 int main(int argc, char** argv)
 {
-	//DEBUG get filename
-    //const char* filename = argc >= 2 ? argv[1] : "gb.jpg";
+	//Get camera index
+    int cameraIndex = argc >= 2 ? stoi(argv[1]) : 1 ;
 
     // Init classes
     configClass mainConfig;
@@ -119,16 +121,22 @@ int main(int argc, char** argv)
 
     // Init Camera
     // Open camera 1
-    VideoCapture cam(CAMERA_INDEX);
-    if(!cam.isOpened())  // check if we succeeded
-        return -1;
+    VideoCapture cam(cameraIndex);
+    if(!cam.isOpened())
+    {
+        // check if we succeeded
+        cout << "Unable to access camera named \"video"<<cameraIndex<<"\""<<endl;
+        cout << "Camera index can be specified as argument. Try \"./go_board_reader 0\"" <<endl;
+         
+        return -1;   
+    }  
+
+    //// Init config
+    mainConfig.init();
 
     //// Init Midi
     if(!mainMidi.init())  // check if we succeeded
         return -1;
-
-    //// Init config
-    mainConfig.init();
 
     //// Get first image
     cam>>imageSrc;

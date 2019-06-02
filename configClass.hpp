@@ -6,15 +6,13 @@
 #include "opencv2/highgui/highgui.hpp"
 #include <string>
 
-    #if defined (__APPLE__)
-    #define SCREEN_DELTA_Y	3
-    #else
-    #define SCREEN_DELTA_Y	0
-    #endif
+// Window delta observed on OS X targets
+#if defined (__APPLE__)
+#define SCREEN_DELTA_Y	3
+#else
+#define SCREEN_DELTA_Y	0
+#endif
 
-
-// Camera index 
-#define CAMERA_INDEX    0
 
 // Go board dimensions in cm. Change left, bottom, right, top edges and grid size
 #define GO_EDGEL_CM     4.6

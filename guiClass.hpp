@@ -55,7 +55,6 @@
 class guiClass
 {
     public:
-
     //guiClass();
     void init(std::string,configClass*);
     void updateTopImg(cv::Mat);
@@ -113,11 +112,8 @@ class guiClass
     int c_state;
 
     // data
-   // std::vector <cv::Point2f> c_corners;
     std::vector <cv::Point> c_coords;
     cv::Mat c_stones;
- 
-
 };
 
 #endif
