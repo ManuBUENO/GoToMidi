@@ -31,6 +31,9 @@
 // Configuration file
 #define CONF_FILENAME   "config.txt"
 
+// Mapping file
+#define MAPP_FILENAME   "mapping.txt"
+
 #define GO_WIDTH_CM     (GO_EDGEL_CM+GO_GRID_CM+GO_EDGER_CM)
 #define GO_HEIGHT_CM    (GO_EDGET_CM+GO_GRID_CM+GO_EDGEB_CM)
 
@@ -47,6 +50,12 @@
 #define PARAM_THRSW		3
 //Number of parameters frm Config file
 #define PARAM_N 		4
+
+// Mapping modes
+#define MAPP_MODE_RAND  "random"
+
+// Mapping types
+#define MAPP_TYPE_NOTE  "note"
 
 // Stones identification
 #define STONE_NONE      0
@@ -67,10 +76,12 @@ class configClass
     void init();
     void saveConfig();
     void loadConfig();
+    void loadMapping();
 
     //get
     std::vector <cv::Point2f> getCorners();
     std::vector <float> getParams();
+    std::vector <std::vector<int> > getMapping();
 
     //set
     void setCorners(std::vector <cv::Point2f>);
@@ -79,6 +90,7 @@ class configClass
     private:
     std::vector <cv::Point2f> c_corners;
     std::vector <float> c_params;
+    std::vector <std::vector<int> > c_mapping;
 
 };
 

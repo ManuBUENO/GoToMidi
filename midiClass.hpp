@@ -12,8 +12,8 @@ class midiClass
 {
     public:
     bool init();
-    bool updateNotes(std::vector <cv::Vec3i>);
-    bool notesOff();
+    bool updateChannels(std::vector <cv::Vec2i>);
+    bool channelsOff();
     //get
 
     //set

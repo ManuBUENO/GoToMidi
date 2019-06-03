@@ -20,11 +20,15 @@ class processClass
     public:
 
     void init(guiClass*, configClass *);
+    void reset();
     cv::Mat preprocess(cv::Mat);
     void scanBoard(cv::Mat);
-    std::vector <cv::Vec3i> getBoardChanges();
+    std::vector <cv::Vec2i> getBoardChanges();
+    void computeChannelStates();
+    std::vector <cv::Vec2i> getChannelChanges();
     void computeCoordinates(cv::Size);
     bool isMoving(cv::Mat,cv::Mat);
+    void channelsOff();
 
     //get
     cv::Mat getStones();
@@ -38,9 +42,16 @@ class processClass
 
     //data
     std::vector <cv::Point> c_coords;
+    
     cv::Mat c_stones;
     cv::Mat c_lastValidStones;
     int c_iterSinceValid;
+
+    std::vector <cv::Vec2i> c_boardChange;
+
+    std::vector <cv::Vec2b> c_channelState;
+
+
 
 };
 

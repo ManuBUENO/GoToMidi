@@ -15,6 +15,7 @@ using namespace std;
 
 /* NOTES
 - Board edges thinckness defines in "configClass.hpp"
+- NOTEZERO from mapping.txt
 */
 
 void onMouse(int event, int x, int y, int flag, void* ptrGUI)
@@ -114,7 +115,7 @@ int main(int argc, char** argv)
     processClass mainProcess;
     midiClass mainMidi;
 
-    // Init Images
+    // Init Imagesc
     Mat imageSrc;
     Mat imageOld;
     Mat imageDst;
@@ -217,9 +218,13 @@ int main(int argc, char** argv)
                     // Search stones, send data to GUI
                     mainProcess.scanBoard(imageDst);
                     // Get changes on board
-                    vector <Vec3i> changes =mainProcess.getBoardChanges();    
-                    //send messages to midi
-                    if(!mainMidi.updateNotes(changes))
+                    mainProcess.getBoardChanges();
+                    // Compute channel states
+                    mainProcess.computeChannelStates();
+                    // Get notes cahnged depending on mapping
+                    vector <Vec2i> Notes = mainProcess.getChannelChanges();
+                    // Send messages to midi
+                    if(!mainMidi.updateChannels(Notes))
                         return -1;
                     //// Update bottom image with stones coordinates
                     mainGUI.updateDownImg(imageDst);
@@ -228,12 +233,24 @@ int main(int argc, char** argv)
             }
             case STATE_STOPPING:
             {
-                mainMidi.notesOff();
+                // Channels Off, update midi
+                mainProcess.channelsOff();
+                vector <Vec2i> Notes = mainProcess.getChannelChanges();
+                if(!mainMidi.updateChannels(Notes))
+                        return -1;
+
+                // Reset process
+                mainProcess.reset();
+                // Go back to main menu    
                 mainGUI.setState(STATE_MAINMENU);
             }
             default:
                 break;
         }
     }
-    mainMidi.notesOff();
+    //Both channelsOff() needs to be called 
+    mainProcess.channelsOff();
+    vector <Vec2i> Notes = mainProcess.getChannelChanges();
+    if(!mainMidi.updateChannels(Notes))
+            return -1;
 }

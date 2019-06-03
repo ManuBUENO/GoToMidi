@@ -26,14 +26,14 @@ bool midiClass::init()
 	return true;
 }
 
-bool midiClass::updateNotes(std::vector <cv::Vec3i> notes)
+bool midiClass::updateChannels(std::vector <cv::Vec2i> notes)
 {
 	vector <unsigned char> message;
 	for (unsigned int i=0;i<notes.size();i++)
 	{
 		message.clear();
 		//define message type
-		if(notes[i][2]>0){
+		if(notes[i][1]>0){
 			message.push_back( 144 );// Note On: 144
 		}
 		else{
@@ -42,7 +42,6 @@ bool midiClass::updateNotes(std::vector <cv::Vec3i> notes)
 		//define note
 		unsigned char note = (unsigned char)NOTE_ZERO;
 		note+= (unsigned char)notes[i][0];
-		note+= (unsigned char) (GO_SIZE*notes[i][1]);
 		message.push_back(note);
 		//cout << (int)note <<endl;
 		//define attack
@@ -60,7 +59,7 @@ bool midiClass::updateNotes(std::vector <cv::Vec3i> notes)
 	return true;
 }
 
-bool midiClass::notesOff()
+bool midiClass::channelsOff()
 {
 	vector <unsigned char> message;
 	for(unsigned int i=0;i<GO_SIZE*GO_SIZE;i++)
@@ -70,7 +69,6 @@ bool midiClass::notesOff()
 		message.push_back( (unsigned char) 128 );// Note Off: 128
 		message.push_back( (unsigned char) NOTE_ZERO+i );// Note Off: 128
 		message.push_back( (unsigned char) 90); // attack
-	
 		try {
 			c_midiOut->sendMessage( &message );
  		}

@@ -23,9 +23,22 @@ void processClass::init(guiClass* ptrMainGUI, configClass * ptrMainConfig)
   c_ptrMainConfig = ptrMainConfig;
   c_ptrMainGUI = ptrMainGUI;
 
+  //get mapping
+  vector < vector<int> > mapping = c_ptrMainConfig->getMapping();
+
+  //init notes
+  c_channelState = vector<Vec2b>(mapping.size(),Vec2b(false,false));
+
   //set first stones
   c_ptrMainGUI->setStones(c_stones);
 }
+
+void processClass::reset()
+{
+  c_stones = Mat::zeros(Size(GO_SIZE,GO_SIZE),CV_8U);
+  c_stones.copyTo(c_lastValidStones);
+  c_iterSinceValid=0;
+} 
 
 Mat processClass::preprocess(Mat image)
 {
@@ -124,10 +137,11 @@ void processClass::scanBoard(Mat boardImg)
   c_ptrMainGUI->setStones(c_stones);
 }
 
-vector <Vec3i> processClass::getBoardChanges()
+vector <Vec2i> processClass::getBoardChanges()
 {
   //// Compare last valid stones to new stones 
-  vector <Vec3i> boardChange;
+  //vector <Vec3i> c_boardChange;
+  c_boardChange.clear();
   // vector format: x?1:GO_SIZE-1 ;y?1:GO_SIZE-1; stone?0:2
   Mat stones_diff;
   compare(c_stones, c_lastValidStones, stones_diff, CMP_NE);
@@ -142,7 +156,7 @@ vector <Vec3i> processClass::getBoardChanges()
     int x=nonZeroCoordinates.at<Point>(0).x;
     int y=nonZeroCoordinates.at<Point>(0).y;
     //store change data
-    boardChange.push_back(Vec3i(x,y,c_stones.at<char>(y,x)));
+    c_boardChange.push_back(Vec2i(x+GO_SIZE*y,c_stones.at<char>(y,x)));
 
     //validate stones
     c_stones.copyTo(c_lastValidStones);
@@ -150,12 +164,14 @@ vector <Vec3i> processClass::getBoardChanges()
     //cout<<c_stones<<endl;
    // cout<< "stone  ["<< boardChange[0][0] <<";"<< boardChange[0][1] << "] changed to " << boardChange[0][2] <<endl;
   }
+  // No change
   else if(nonZeroCoordinates.total()==0)
   {
     //No change but validate stones
     c_stones.copyTo(c_lastValidStones);
     c_iterSinceValid=0;
   }
+  // Too much changes
   else
   {
     // Too much stones changed, not possible
@@ -167,18 +183,90 @@ vector <Vec3i> processClass::getBoardChanges()
       unsigned int i;
       for(i=0;i<nonZeroCoordinates.total();i++)
       {
-        //store change data
         int x=nonZeroCoordinates.at<Point>(i).x;
         int y=nonZeroCoordinates.at<Point>(i).y;
-        boardChange.push_back(Vec3i(x,y,c_stones.at<char>(y,x)));
-       // cout<< "stone  ["<< boardChange[i][0] <<";"<< boardChange[i][1] << "] changed to " << boardChange[i][2] <<endl;
+        //store change data
+        c_boardChange.push_back(Vec2i(x+GO_SIZE*y,c_stones.at<char>(y,x)));
+        //cout<< "stone  "<< c_boardChange[i][0] << " changed to " << c_boardChange[i][1] <<endl;
         // validate board
         c_iterSinceValid=0;
         c_stones.copyTo(c_lastValidStones);
       }
     }
   }
-  return boardChange; 
+  return c_boardChange; 
+}
+
+void processClass::computeChannelStates()
+{
+  // Init variables
+  int channel;
+  int sum,x,y;
+  unsigned int iterSpot,index;
+
+  // Retreive mapping info
+  vector < vector<int> > mapping = c_ptrMainConfig->getMapping();
+
+  // For each board changement
+  for(unsigned int iterBChange=0;iterBChange<c_boardChange.size();iterBChange++)
+  {
+    // Set to impossible value as condition to remain in loops
+    channel=INT_MAX;
+    // Search in which channel is the changed spot
+    for(index=0;index<mapping.size();index++)
+    {
+      for(iterSpot=0;iterSpot<mapping[index].size();iterSpot++)
+      {
+        if(mapping[index][iterSpot]==c_boardChange[iterBChange][0])
+        {
+          channel=index;break;
+        }
+      }
+      if(channel<INT_MAX)
+        break;
+    }
+    // Sum stones assigned to channel
+    sum=0;
+    for(iterSpot=0;iterSpot<mapping[channel].size();iterSpot++)
+    {
+      int spot = mapping[channel][iterSpot];
+      y = (int)spot/GO_SIZE;
+      x = (int)spot%GO_SIZE;
+      sum+=(int)c_stones.at<char>(y,x);
+    }
+    // No stone and channel ON --> channel OFF
+    if(sum==0 && c_channelState[channel][0]==true)
+    {
+      c_channelState[channel][0]=false; // channel OFF
+      c_channelState[channel][1]=true; // channel changed
+     // channelChange.push_back(Vec2i(channel,0));
+    }
+    // Stones present and channel off --> 
+    else if (sum>0 && c_channelState[channel][0]==false)
+    {
+      c_channelState[channel][0]=true; // channel ON
+      c_channelState[channel][1]=true; // channel changed
+    //  channelChange.push_back(Vec2i(channel,1));
+    }
+  }
+  //return channelChange; 
+}
+
+vector <Vec2i> processClass::getChannelChanges()
+{
+  // Init variables
+  vector <Vec2i> channelChange;
+  //For each channel changed
+  for(unsigned int channel=0;channel<c_channelState.size();channel++)
+  { 
+    if(c_channelState[channel][1]==true)
+    {
+      // store cahnge in vector
+      channelChange.push_back(Vec2i(channel,(int)c_channelState[channel][0]));
+      c_channelState[channel][1]=false;  // channel change taken into account
+    }
+  }
+  return channelChange;
 }
 
 
@@ -210,11 +298,6 @@ void processClass::computeCoordinates(Size imgSize)
       c_coords.push_back(Point((int)x,(int)y));
     }
   }
-  //cout << GO_EDGEL_CM<< endl;
-  //cout << GO_WIDTH_CM << endl;
-  //cout << GO_EDGEL_RATIO << endl;
-  //cout << edges[3] << endl;
-  // Give coords to GUI
   c_ptrMainGUI->setCoords(c_coords);
 }
 
@@ -238,6 +321,18 @@ bool processClass::isMoving(Mat imageOld, Mat imageNew)
   return false;
 }
 
+void processClass::channelsOff()
+{
+  // For each channel ON
+  for(unsigned int channel=0;channel<c_channelState.size();channel++)
+  {
+    if(c_channelState[channel][0]==true)
+    {
+      c_channelState[channel][0]=false; // channel OFF
+      c_channelState[channel][1]=true;  // channel changed
+    }
+  }
+}
 
 //GET
 

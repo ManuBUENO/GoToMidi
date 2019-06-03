@@ -15,8 +15,9 @@ void configClass::init()
 	//c_ptrMainGUI = ptrMainGUI;
 	c_corners.reserve(GO_SIZE*GO_SIZE); 
 	c_params.reserve(PARAM_N);
+  c_params.reserve(PARAM_N);
 	this->loadConfig();
-	
+  this->loadMapping();
 }
 
 
@@ -62,21 +63,21 @@ void configClass::loadConfig()
   	c_corners.clear();
   	c_params.clear();
   	if (pFile!=NULL)
- 	{
- 		for(i=0;i<4;i++)
- 		{
- 			fscanf(pFile,"%s : %f\t%f\n",bin,&x,&y);
- 			c_corners.push_back(Point2f(x,y));	
- 			//cout << x << endl;
- 		}
- 		for(i=0;i<PARAM_N;i++)
- 		{
- 			fscanf(pFile,"%s : %f\n",bin,&tmp);
- 			//cout << tmp << endl;
- 			c_params.push_back(tmp);
- 			
- 		}
-    	fclose (pFile);
+ 	  {
+   		for(i=0;i<4;i++)
+   		{
+   			fscanf(pFile,"%s : %f\t%f\n",bin,&x,&y);
+   			c_corners.push_back(Point2f(x,y));	
+   			//cout << x << endl;
+   		}
+   		for(i=0;i<PARAM_N;i++)
+   		{
+   			fscanf(pFile,"%s : %f\n",bin,&tmp);
+   			//cout << tmp << endl;
+   			c_params.push_back(tmp);
+   			
+   		}
+      	fclose (pFile);
     }
     // Else default values 
     else
@@ -89,9 +90,69 @@ void configClass::loadConfig()
     	c_params.push_back(0.0);
     	c_params.push_back(0.2);
     	c_params.push_back(0.6);
-    }	
-    // Update data in GUI
-   // c_ptrMainGUI->setCorners(corners);
+    }	  
+}
+
+void configClass::loadMapping()
+{
+
+  // OpenConfigFile
+    FILE * pFile;
+    pFile = fopen (MAPP_FILENAME,"r");
+    unsigned int total,start;
+    unsigned int spot;//index;
+    //float x,y,tmp;
+    char mode[50],type[50];
+
+    if (pFile!=NULL)
+    {
+      //// Read first line
+      fscanf(pFile,"%s %s %i %i",mode,type, &total, &start);
+      //cout << mode<< " " <<type<< " " << tracksTot<< " " <<tracksStart <<endl;
+      // Init mapping size
+      c_mapping.resize(total);
+
+      // Mode random : assign each spot to a random channel
+      if(strcmp(mode,MAPP_MODE_RAND)==0)
+      {
+        // for each spot
+        for(spot=0;spot<GO_SIZE*GO_SIZE;spot++)
+        {
+          // specify it in a random channel
+          int index = rand() % total;
+          c_mapping[index].push_back(spot);
+        }
+      }
+      // Mode unknown: go to default
+      else
+      {
+        fclose (pFile);
+        // Specify pFile as null to enter default condition
+        pFile=NULL;
+      }
+    }
+    // By default, assign each spot to a channel incrementally
+    if (pFile==NULL)
+    {
+      // Init mapping size
+      c_mapping.resize(GO_SIZE*GO_SIZE);
+      for(spot=0;spot<GO_SIZE*GO_SIZE;spot++)
+      {
+        // Assign spot to its note 
+        c_mapping[spot].push_back(spot);
+      }
+    }
+
+    /* debug: print mapping
+    for(index=0;index<c_mapping.size();index++)
+    {
+      cout << 36+index << " : ";
+      for(spot=0;spot<c_mapping[index].size();spot++)
+      {
+        cout << c_mapping[index][spot] << " ";
+      }
+      cout << endl;
+    }*/
 }
 
 
@@ -104,6 +165,11 @@ vector <Point2f> configClass::getCorners()
 vector <float> configClass::getParams()
 {
 	return c_params;
+}
+
+vector < vector<int> > configClass::getMapping()
+{
+  return c_mapping;
 }
 
 // SET
