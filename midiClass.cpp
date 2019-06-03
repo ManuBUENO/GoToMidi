@@ -33,19 +33,17 @@ bool midiClass::updateChannels(std::vector <cv::Vec2i> notes)
 	{
 		message.clear();
 		//define message type
-		if(notes[i][1]>0){
-			message.push_back( 144 );// Note On: 144
-		}
-		else{
-			message.push_back( 128 );// Note Off: 128
-		}
+		message.push_back( 144 );// Note On: 144
 		//define note
 		unsigned char note = (unsigned char)NOTE_ZERO;
 		note+= (unsigned char)notes[i][0];
-		message.push_back(note);
-		//cout << (int)note <<endl;
-		//define attack
-		message.push_back(NOTE_ATTACK);
+		//Attacks defines muting .. 127 mutes ; 0 unmutes
+		if(notes[i][1]>0){
+			message.push_back(0);
+		}
+		else{
+			message.push_back(127);// Note Off: 128
+		}
 		//send message
 		try {
 			c_midiOut->sendMessage( &message );
