@@ -143,8 +143,8 @@ void configClass::loadMapping()
       }
     }
 
-    /* debug: print mapping
-    for(index=0;index<c_mapping.size();index++)
+    //debug: print mapping
+    for(unsigned int index=0;index<c_mapping.size();index++)
     {
       cout << 36+index << " : ";
       for(spot=0;spot<c_mapping[index].size();spot++)
@@ -152,7 +152,7 @@ void configClass::loadMapping()
         cout << c_mapping[index][spot] << " ";
       }
       cout << endl;
-    }*/
+    }
 }
 
 

@@ -37,6 +37,7 @@ bool midiClass::updateChannels(std::vector <cv::Vec2i> notes)
 		//define note
 		unsigned char note = (unsigned char)NOTE_ZERO;
 		note+= (unsigned char)notes[i][0];
+        message.push_back(note);
 		//Attacks defines muting .. 127 mutes ; 0 unmutes
 		if(notes[i][1]>0){
 			message.push_back(0);
