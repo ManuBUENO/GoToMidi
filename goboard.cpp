@@ -188,10 +188,12 @@ int main(int argc, char** argv)
             }
             case STATE_CONFIGPARAMS:
             {
-                // For MACOS, try disabling camera auto exposure
+                /* For MACOS, try disabling camera auto exposure
                 if(SOFT_TARGET == TARGET_OSX){
-                    cam.set(CV_CAP_PROP_AUTO_EXPOSURE, 0.25);
-                }
+                    cam.set(CV_CAP_PROP_AUTO_EXPOSURE, 0);
+                    cout<<"try auto exposure OFF"<<endl;
+                } doesnt work */
+                
                 // Load parameters
                 mainConfig.loadConfig();
                 mainGUI.writeTxt("Config loaded",true);
