@@ -188,6 +188,10 @@ int main(int argc, char** argv)
             }
             case STATE_CONFIGPARAMS:
             {
+                // For MACOS, try disabling camera auto exposure
+                if(SOFT_TARGET == TARGET_OSX){
+                    cam.set(CV_CAP_PROP_AUTO_EXPOSURE, 0.25);
+                }
                 // Load parameters
                 mainConfig.loadConfig();
                 mainGUI.writeTxt("Config loaded",true);

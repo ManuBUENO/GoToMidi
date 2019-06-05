@@ -7,9 +7,14 @@
 #include <string>
 
 // Window delta observed on OS X targets
+#define TARGET_OSX      0
+#define TARGET_OTHER    0
+
 #if defined (__APPLE__)
+#define SOFT_TARGET     TARGET_OSX 
 #define SCREEN_DELTA_Y	3
 #else
+#define SOFT_TARGET     TARGET_OTHER 
 #define SCREEN_DELTA_Y	0
 #endif
 

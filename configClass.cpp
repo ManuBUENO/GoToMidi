@@ -4,6 +4,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/opencv.hpp" 
 #include <stdio.h>
+#include <time.h> 
 
 
 using namespace std;
@@ -112,7 +113,9 @@ void configClass::loadMapping()
       // Init mapping size
       c_mapping.resize(total);
 
-      // Mode random : assign each spot to a random channel
+      //// Mode random : assign each spot to a random channel
+      // initialize seed
+      srand (time(NULL));
       if(strcmp(mode,MAPP_MODE_RAND)==0)
       {
         // for each spot
