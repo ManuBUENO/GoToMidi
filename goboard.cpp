@@ -65,8 +65,8 @@ void onMouse(int event, int x, int y, int flag, void* ptrGUI)
             float xf = float(x)/float(TOP_IMG_W);
             float yf = float(y)/float(TOP_IMG_H+DOWN_IMG_W);
 
-            // retreive corners
-            // nota: Unable to retreive corners directly from configClass.
+            // retrieve corners
+            // nota: Unable to retrieve corners directly from configClass.
             //       So we get them from configClass THROUGH guiClass
             vector <Point2f> corners = ptrMainGUI->getCorners();
             // add new point

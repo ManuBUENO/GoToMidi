@@ -177,8 +177,8 @@ vector <Vec2i> processClass::getBoardChanges()
     // Too much stones changed, not possible
     // No change, unvalidate new c_stones
     c_iterSinceValid +=1;
-    //After 1 second, validate board anywway
-    if(c_iterSinceValid>=FRAMERATE)
+    //After 0.5 second, validate board anywway. Timing not accurate
+    if(c_iterSinceValid>=FRAMERATE/2)
     {
       unsigned int i;
       for(i=0;i<nonZeroCoordinates.total();i++)
