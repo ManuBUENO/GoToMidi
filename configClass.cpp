@@ -149,7 +149,7 @@ void configClass::loadMapping()
     //debug: print mapping
     for(unsigned int index=0;index<c_mapping.size();index++)
     {
-      cout << 36+index << " : ";
+      cout << start+index << " : ";
       for(spot=0;spot<c_mapping[index].size();spot++)
       {
         cout << c_mapping[index][spot] << " ";

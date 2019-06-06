@@ -1,4 +1,4 @@
-random note 16 36	//mode random; 40 notes; first note 36 (C1)
+random note 33 37	//mode random; 40 notes; first note 37 (C1)
 1;1:muteTrack A
 1;2:muteTrack A
 1;3:muteTrack A

@@ -5,7 +5,7 @@
 #include "opencv2/core/core.hpp"
 
 #define MIDIPORTNAME 	"MIDI_GO_OUT"
-#define NOTE_ZERO	 	36 //36 //C1
+#define NOTE_ZERO	 	37 //36 //C1
 #define NOTE_ATTACK	 	100 
 
 class midiClass

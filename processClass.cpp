@@ -84,7 +84,8 @@ Mat processClass::preprocess(Mat image)
     //Apply gaussian blur
     GaussianBlur(fixB, fixB, Size(3, 3), 0);
     // change contrast and brightness
-    fixB.convertTo(fixB, -1, params[PARAM_CONTR], params[PARAM_BRIGH]);
+    fixB.convertTo(fixB, -1, 1 , params[PARAM_BRIGH]);
+    fixB.convertTo(fixB, -1, params[PARAM_CONTR], 0);
     fixB.convertTo(fix,CV_8UC3);
 
     //convert back to BGR

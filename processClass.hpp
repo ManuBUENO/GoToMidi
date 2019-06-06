@@ -11,7 +11,7 @@
 #include "guiClass.hpp"
 
 
-#define ROI_RAD		5
+#define ROI_RAD		7
 #define ROI_MAX		255*ROI_RAD*ROI_RAD
 
 
