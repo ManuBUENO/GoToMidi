@@ -136,7 +136,7 @@ int main(int argc, char** argv)
     mainConfig.init();
 
     //// Init Midi
-    if(!mainMidi.init())  // check if we succeeded
+    if(!mainMidi.init(&mainConfig))  // check if we succeeded
         return -1;
 
     //// Get first image

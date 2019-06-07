@@ -6,8 +6,11 @@
 using namespace std;
 using namespace cv;
 
-bool midiClass::init()
+bool midiClass::init(configClass* ptrMainConfig)
 {
+	// Get config pointer
+
+	c_ptrMainConfig = ptrMainConfig;
   // RtMidiOut constructor
   try {
     c_midiOut = new RtMidiOut();
@@ -28,23 +31,35 @@ bool midiClass::init()
 
 bool midiClass::updateChannels(std::vector <cv::Vec2i> notes)
 {
+	// Retreive mapping info
+  mappingStruct_t mappingInfo = c_ptrMainConfig->getMapping();
+
 	vector <unsigned char> message;
 	for (unsigned int i=0;i<notes.size();i++)
 	{
 		message.clear();
 		//define message type
-		message.push_back( 144 );// Note On: 144
+		if (strcmp(mappingInfo.mode,MIDI_STATUS_NOTEON)){
+			message.push_back( 144 );// Note On: 144
+		}
+		else if (strcmp(mappingInfo.mode,MIDI_STATUS_NOTEOFF)){
+			message.push_back( 128 );// Note Off: 128
+		}
+		else{
+			message.push_back( 144 );// Note On: 144
+		}
+		
 		//define note
-		unsigned char note = (unsigned char)NOTE_ZERO;
+		unsigned char note = (unsigned char)mappingInfo.channelIndexStart;
 		note+= (unsigned char)notes[i][0];
         message.push_back(note);
 		//Attacks defines muting .. 127 mutes ; 0 unmutes
         //CONFIG : set stone UNMUTES
 		if(notes[i][1]>0){
-			message.push_back(0);
+			message.push_back((unsigned char)mappingInfo.midiData_spotStone);
 		}
 		else{
-			message.push_back(127);
+			message.push_back((unsigned char)mappingInfo.midiData_spotEmpty);
 		}
 		//send message
 		try {

@@ -24,10 +24,10 @@ void processClass::init(guiClass* ptrMainGUI, configClass * ptrMainConfig)
   c_ptrMainGUI = ptrMainGUI;
 
   //get mapping
-  vector < vector<int> > mapping = c_ptrMainConfig->getMapping();
+  mappingStruct_t mappingInfo = c_ptrMainConfig->getMapping();
 
   //init notes
-  c_channelState = vector<Vec2b>(mapping.size(),Vec2b(false,false));
+  c_channelState = vector<Vec2b>(mappingInfo.mapping.size(),Vec2b(false,false));
 
   //set first stones
   c_ptrMainGUI->setStones(c_stones);
@@ -206,8 +206,8 @@ void processClass::computeChannelStates()
   unsigned int iterSpot,index;
 
   // Retreive mapping info
-  vector < vector<int> > mapping = c_ptrMainConfig->getMapping();
-
+  mappingStruct_t mappingInfo = c_ptrMainConfig->getMapping();
+  vector < vector<int> > mapping = mappingInfo.mapping;
   // For each board changement
   for(unsigned int iterBChange=0;iterBChange<c_boardChange.size();iterBChange++)
   {

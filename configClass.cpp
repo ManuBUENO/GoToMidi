@@ -4,6 +4,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/opencv.hpp" 
 #include <stdio.h>
+#include <string>
 #include <time.h> 
 
 
@@ -96,34 +97,44 @@ void configClass::loadConfig()
 
 void configClass::loadMapping()
 {
-
   // OpenConfigFile
     FILE * pFile;
     pFile = fopen (MAPP_FILENAME,"r");
-    unsigned int total,start;
+    //unsigned int channelIndexStart,channelIndexNumber;
+    //unsigned int midiStatus_spotStone,midiData_spotStone;
+    //unsigned int midiStatus_spotEmpty,midiData_spotEmpty;
+
     unsigned int spot;//index;
     //float x,y,tmp;
-    char mode[50],type[50];
+   // char mode[50];
+    
 
     if (pFile!=NULL)
     {
-      //// Read first line
-      fscanf(pFile,"%s %s %i %i",mode,type, &total, &start);
+      //// Read first parameter
+      fscanf(pFile,"%s ",c_mapping.mode);
       //cout << mode<< " " <<type<< " " << tracksTot<< " " <<tracksStart <<endl;
-      // Init mapping size
-      c_mapping.resize(total);
-
       //// Mode random : assign each spot to a random channel
-      // initialize seed
-      srand (time(NULL));
-      if(strcmp(mode,MAPP_MODE_RAND)==0)
+      if(strcmp(c_mapping.mode,MAPP_MODE_RAND)==0)
       {
+        // Read channels parameters
+        fscanf(pFile,"%i %i ",&(c_mapping.channelIndexStart),&(c_mapping.channelIndexNumber));
+        // Read Midi parameters for spot with stone
+        fscanf(pFile,"%s %i ",c_mapping.midiStatus_spotStone,&(c_mapping.midiData_spotStone));
+        // Read Midi parameters for spot withOUT stone
+        fscanf(pFile,"%s %i ",c_mapping.midiStatus_spotEmpty,&(c_mapping.midiData_spotEmpty));
+
+        // Init mapping size
+        c_mapping.mapping.resize(c_mapping.channelIndexNumber);
+
+        // initialize random seed
+        srand (time(NULL));
         // for each spot
         for(spot=0;spot<GO_SIZE*GO_SIZE;spot++)
         {
           // specify it in a random channel
-          int index = rand() % total;
-          c_mapping[index].push_back(spot);
+          int index = rand() % c_mapping.channelIndexNumber;
+          c_mapping.mapping[index].push_back(spot);
         }
       }
       // Mode unknown: go to default
@@ -138,21 +149,21 @@ void configClass::loadMapping()
     if (pFile==NULL)
     {
       // Init mapping size
-      c_mapping.resize(GO_SIZE*GO_SIZE);
+      c_mapping.mapping.resize(GO_SIZE*GO_SIZE);
       for(spot=0;spot<GO_SIZE*GO_SIZE;spot++)
       {
         // Assign spot to its note 
-        c_mapping[spot].push_back(spot);
+        c_mapping.mapping[spot].push_back(spot);
       }
     }
 
     //debug: print mapping
-    for(unsigned int index=0;index<c_mapping.size();index++)
+    for(unsigned int index=0;index<c_mapping.mapping.size();index++)
     {
-      cout << start+index << " : ";
-      for(spot=0;spot<c_mapping[index].size();spot++)
+      cout << c_mapping.channelIndexStart+index << " : ";
+      for(spot=0;spot<c_mapping.mapping[index].size();spot++)
       {
-        cout << c_mapping[index][spot] << " ";
+        cout << c_mapping.mapping[index][spot] << " ";
       }
       cout << endl;
     }
@@ -170,7 +181,7 @@ vector <float> configClass::getParams()
 	return c_params;
 }
 
-vector < vector<int> > configClass::getMapping()
+mappingStruct_t configClass::getMapping()
 {
   return c_mapping;
 }

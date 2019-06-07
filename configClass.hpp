@@ -60,7 +60,8 @@
 #define MAPP_MODE_RAND  "random"
 
 // Mapping types
-#define MAPP_TYPE_NOTE  "note"
+#define MIDI_STATUS_NOTEON  "noteON"
+#define MIDI_STATUS_NOTEOFF "noteOFF"
 
 // Stones identification
 #define STONE_NONE      0
@@ -75,6 +76,24 @@
 #define STATE_CONFIGPARAMS  5
 #define STATE_STOPPING      6
 
+struct mappingStruct_t {
+    // Mapping mode
+    char mode[50];
+    // Mapping: vector of channels. Each channel contains the list of spots assigned to it
+    std::vector <std::vector<int> > mapping;
+    // Index of first channel
+    int channelIndexStart;
+    // Number of channels
+    int channelIndexNumber;
+    // Midi message info whrn stone is present 
+    char midiStatus_spotStone[50];
+    int midiData_spotStone;
+    // Midi message info whrn stone is absent
+    char midiStatus_spotEmpty[50];
+    int midiData_spotEmpty;
+};
+
+
 class configClass
 {
     public:
@@ -86,16 +105,19 @@ class configClass
     //get
     std::vector <cv::Point2f> getCorners();
     std::vector <float> getParams();
-    std::vector <std::vector<int> > getMapping();
+    mappingStruct_t getMapping();
 
     //set
     void setCorners(std::vector <cv::Point2f>);
     void clearCorners();
 
     private:
+
     std::vector <cv::Point2f> c_corners;
     std::vector <float> c_params;
-    std::vector <std::vector<int> > c_mapping;
+
+    mappingStruct_t c_mapping;
+    //std::vector <std::vector<int> > c_mapping;
 
 };
 
