@@ -9,6 +9,7 @@
 
 #include "configClass.hpp"
 #include "guiClass.hpp"
+#include "typesClass.hpp"
 
 
 #define ROI_RAD		7
@@ -19,65 +20,36 @@ class processClass
 {
     public:
 
-    void init(guiClass*, configClass *);
+    processClass(configClass *);
+    void init();
     void reset();
-    cv::Mat preprocess(cv::Mat);
-    void scanBoard(cv::Mat);
-    std::vector <cv::Vec2i> getBoardChanges();
-    void computeChannelStates();
-    std::vector <cv::Vec2i> getChannelChanges();
+    cv::Mat preprocess(const cv::Mat&) const;
     void computeCoordinates(cv::Size);
-    bool isMoving(cv::Mat,cv::Mat);
+    void scanBoard(const cv::Mat&);
+    void checkBoardChanges();
+    void computeChannelStates();
+    bool isMoving(const cv::Mat&,const cv::Mat&) const;
     void channelsOff();
-
     //get
-    cv::Mat getStones();
-    void getCoords(std::vector <cv::Point>*);
 
     private:
 
-    //pointers
-    guiClass * c_ptrMainGUI;
+    //// Pointers to classes
     configClass * c_ptrMainConfig;
 
-    //data
-    std::vector <cv::Point> c_coords;
-    
-    cv::Mat c_stones;
-    cv::Mat c_lastValidStones;
+    //// Data
+    // Iteration since valid spots state
     int c_iterSinceValid;
 
-    std::vector <cv::Vec2i> c_boardChange;
+    // List of spots
+    Spot* c_spots[GO_SIZE*GO_SIZE];
 
-    std::vector <cv::Vec2b> c_channelState;
-
-
+    // List of channels
+    std::vector <Channel *> c_channels;
 
 };
 
 #endif
-
-/* 
----------------------ProcessClass.hpp
-cv::Mat2i c_stones;
-cv::Mat2i c_lastValidStones;
-cv::Mat2i getStones();
-
-
---------------------guiClass.hpp
-void setStones(cv::Mat2i); L80
-
---------------------guiClass.cpp
-c_stones =cv::Mat2i::zeros(GO_SIZE,GO_SIZE);  L58
-if(c_stones[i][j][0]==STONE_NONE){ L121
-else if(c_stones[i][j][0]==STONE_BLACK){ L123    
-
-forgot L136
-
-void guiClass::setStones(Mat stones) L298
-
-*/
-
 
 
 

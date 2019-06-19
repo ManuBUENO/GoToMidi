@@ -6,6 +6,8 @@
 #include "opencv2/highgui/highgui.hpp"
 #include <string>
 
+#include "typesClass.hpp"
+
 // Window delta observed on OS X targets
 #define TARGET_OSX      0
 #define TARGET_OTHER    0
@@ -29,6 +31,7 @@
 
 // Size of go-board
 #define GO_SIZE         9
+#define GO_N_SPOTS      GO_SIZE*GO_SIZE
 
 // Application framerate. Can be changed to adapt CPU load
 #define FRAMERATE       30
@@ -58,15 +61,11 @@
 
 // Mapping modes
 #define MAPP_MODE_RAND  "random"
+#define MAPP_MODE_SEQU  "sequencer"
 
 // Mapping types
 #define MIDI_STATUS_NOTEON  "noteON"
 #define MIDI_STATUS_NOTEOFF "noteOFF"
-
-// Stones identification
-#define STONE_NONE      0
-#define STONE_BLACK     1
-#define STONE_WHITE     2
 
 // Application states
 #define STATE_MAINMENU      1
@@ -75,37 +74,27 @@
 #define STATE_SAVECONFIG    4
 #define STATE_CONFIGPARAMS  5
 #define STATE_STOPPING      6
+#define STATE_STARTING      7
 
-struct mappingStruct_t {
-    // Mapping mode
-    char mode[50];
-    // Mapping: vector of channels. Each channel contains the list of spots assigned to it
-    std::vector <std::vector<int> > mapping;
-    // Index of first channel
-    int channelIndexStart;
-    // Number of channels
-    int channelIndexNumber;
-    // Midi message info whrn stone is present 
-    char midiStatus_spotStone[50];
-    int midiData_spotStone;
-    // Midi message info whrn stone is absent
-    char midiStatus_spotEmpty[50];
-    int midiData_spotEmpty;
-};
 
 
 class configClass
 {
     public:
+
+    configClass();
+    ~configClass();
     void init();
-    void saveConfig();
+    void saveConfig() const;
     void loadConfig();
     void loadMapping();
 
+
     //get
-    std::vector <cv::Point2f> getCorners();
-    std::vector <float> getParams();
-    mappingStruct_t getMapping();
+    std::vector <cv::Point2f> getCorners() const;
+    std::vector <float> getParams() const;
+    void getSpots(Spot**) const;
+    std::vector <Channel*> getChannels() const;
 
     //set
     void setCorners(std::vector <cv::Point2f>);
@@ -113,11 +102,16 @@ class configClass
 
     private:
 
+    // Go_board corners
     std::vector <cv::Point2f> c_corners;
+    // Image Parameters
     std::vector <float> c_params;
 
-    mappingStruct_t c_mapping;
-    //std::vector <std::vector<int> > c_mapping;
+    // Reference to spots
+    Spot* c_spots[GO_N_SPOTS];
+
+    // Reference to channels
+    std::vector <Channel*> c_channels;
 
 };
 

@@ -111,9 +111,9 @@ int main(int argc, char** argv)
 
     // Init classes
     configClass mainConfig;
-    guiClass mainGUI;
-    processClass mainProcess;
-    midiClass mainMidi;
+    guiClass mainGUI(&mainConfig);
+    processClass mainProcess(&mainConfig);
+    midiClass mainMidi(&mainConfig);
 
     // Init Imagesc
     Mat imageSrc;
@@ -130,23 +130,23 @@ int main(int argc, char** argv)
         cout << "Camera index can be specified as argument. Try \"./go_board_reader 0\"" <<endl;
          
         return -1;   
-    }  
+    }
 
     //// Init config
     mainConfig.init();
 
     //// Init Midi
-    if(!mainMidi.init(&mainConfig))  // check if we succeeded
+    if(!mainMidi.init())  // check if we succeeded
         return -1;
 
     //// Get first image
     cam>>imageSrc;
 
     //// Init GUI
-    mainGUI.init("Go-board reader V1.0",&mainConfig);
+    mainGUI.init("Go-board reader V1.0");//,&mainConfig);
     
     //// Init process 
-    mainProcess.init(&mainGUI,&mainConfig);
+    mainProcess.init();
 
     //// First preprocess;
     // treat image
@@ -188,12 +188,6 @@ int main(int argc, char** argv)
             }
             case STATE_CONFIGPARAMS:
             {
-                /* For MACOS, try disabling camera auto exposure
-                if(SOFT_TARGET == TARGET_OSX){
-                    cam.set(CV_CAP_PROP_AUTO_EXPOSURE, 0);
-                    cout<<"try auto exposure OFF"<<endl;
-                } doesnt work */
-                
                 // Load parameters
                 mainConfig.loadConfig();
                 mainGUI.writeTxt("Config loaded",true);
@@ -212,6 +206,14 @@ int main(int argc, char** argv)
                 // Write something  
                 break;
             }
+            case STATE_STARTING:
+            {
+                // Reset process
+                mainProcess.reset();
+                // Set state to Running
+                mainGUI.setState(STATE_RUNNING);
+                break;
+            }
             case STATE_RUNNING:
             {
                 //// Treat image
@@ -223,40 +225,41 @@ int main(int argc, char** argv)
                     mainGUI.updateTopImg(imageSrc);
                     // Search stones, send data to GUI
                     mainProcess.scanBoard(imageDst);
-                    // Get changes on board
-                    mainProcess.getBoardChanges();
-                    // Compute channel states
+                    // Check if board changes are logical
+                    mainProcess.checkBoardChanges();
+                    // Compute channel states based on board changes
                     mainProcess.computeChannelStates();
-                    // Get notes cahnged depending on mapping
-                    vector <Vec2i> Notes = mainProcess.getChannelChanges();
-                    // Send messages to midi
-                    if(!mainMidi.updateChannels(Notes))
-                        return -1;
-                    //// Update bottom image with stones coordinates
+                    // Update channels manually
+                    mainMidi.updateChannels();
+                    // Update bottom image with stones coordinates
                     mainGUI.updateDownImg(imageDst);
                 }
                 break;
             }
             case STATE_STOPPING:
             {
-                // Channels Off, update midi
+                // Channels Off
                 mainProcess.channelsOff();
-                vector <Vec2i> Notes = mainProcess.getChannelChanges();
-                if(!mainMidi.updateChannels(Notes))
+
+                // Update channels
+                if(!mainMidi.updateChannels())
                         return -1;
 
-                // Reset process
+                // Reset process (spots + channels)
                 mainProcess.reset();
+
                 // Go back to main menu    
                 mainGUI.setState(STATE_MAINMENU);
+                break;
             }
             default:
                 break;
         }
     }
-    //Both channelsOff() needs to be called 
+    // Channels Off
     mainProcess.channelsOff();
-    vector <Vec2i> Notes = mainProcess.getChannelChanges();
-    if(!mainMidi.updateChannels(Notes))
+
+    // Update channels
+    if(!mainMidi.updateChannels())
             return -1;
 }

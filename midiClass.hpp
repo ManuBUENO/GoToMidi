@@ -7,15 +7,15 @@
 #include "configClass.hpp"
 
 #define MIDIPORTNAME 	"MIDI_GO_OUT"
-#define NOTE_ZERO	 	37 //36 //C1
-#define NOTE_ATTACK	 	100 
 
 class midiClass
 {
     public:
-    bool init(configClass *);
-    bool updateChannels(std::vector <cv::Vec2i>);
-    bool channelsOff();
+
+    midiClass(configClass *);
+    bool init();
+    bool updateChannels();
+    
     //get
 
     //set
@@ -23,8 +23,11 @@ class midiClass
     private:
     //ptr config
     configClass * c_ptrMainConfig;
-
     RtMidiOut *c_midiOut;
+    RtMidiIn *c_midiIn;
+
+    //List of channels
+    std::vector <Channel *> c_channels;
 };
 
 #endif

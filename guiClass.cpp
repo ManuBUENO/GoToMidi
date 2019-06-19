@@ -11,14 +11,13 @@
 using namespace std;
 using namespace cv;
 
-
+guiClass::guiClass(configClass* ptrMainConfig) : c_ptrMainConfig(ptrMainConfig){}
 
 // Create GUI
-void guiClass::init(string windowName, configClass* ptrConfig)
+void guiClass::init(const string& windowName)
 {
   // Init variables
   c_windowName = windowName;
-  c_ptrConfig = ptrConfig;
 
   // Init GUI full image
   c_imgFull = Mat(WNDW_H, WNDW_W, CV_8UC3, Scalar(128,128,128));
@@ -56,8 +55,11 @@ void guiClass::init(string windowName, configClass* ptrConfig)
   this->setState(STATE_MAINMENU);
 
   // Init data
-  c_coords.reserve(GO_SIZE*GO_SIZE);
-  c_stones = Mat::zeros(Size(GO_SIZE,GO_SIZE),CV_8U);
+
+  // Get spots
+  c_ptrMainConfig->getSpots(c_spots);
+  // c_coords.reserve(GO_SIZE*GO_SIZE);
+  //c_stones = Mat::zeros(Size(GO_SIZE,GO_SIZE),CV_8U);
 
   // Init window
   namedWindow(c_windowName, CV_WINDOW_AUTOSIZE);
@@ -71,17 +73,12 @@ void guiClass::init(string windowName, configClass* ptrConfig)
   c_imgBtn2.copyTo(c_imgFull(Rect(BTN2_IMG_X,BTN2_IMG_Y,c_imgBtn2.cols, c_imgBtn2.rows)));
   c_imgBtn3.copyTo(c_imgFull(Rect(BTN3_IMG_X,BTN3_IMG_Y,c_imgBtn3.cols, c_imgBtn3.rows)));
 
-
   // Disp screen
   this->updateScreen();
-
 }
 
-void guiClass::updateTopImg(Mat img)//, vector<Point2f> corners)
+void guiClass::updateTopImg(const Mat& img)//, vector<Point2f> corners)
 {
-  Mat imgTmp;
-  // Copy image
-  img.copyTo(imgTmp);
   // Define the destination size
   Size imgSize;
   if(c_state==STATE_CONFIGCOORDS){
@@ -92,10 +89,10 @@ void guiClass::updateTopImg(Mat img)//, vector<Point2f> corners)
     imgSize = Size(TOP_IMG_W,TOP_IMG_H);
   }
   // Resize img
-  resize(imgTmp,c_imgTop,imgSize);
+  resize(img,c_imgTop,imgSize);
 
   // Retreive corners corrdinates
-  vector <Point2f> corners = c_ptrConfig->getCorners();
+  vector <Point2f> corners = c_ptrMainConfig->getCorners();
   if (corners.size()==4)
   {
     int i;
@@ -114,29 +111,25 @@ void guiClass::updateTopImg(Mat img)//, vector<Point2f> corners)
   this->updateScreen();
 }
 
-void guiClass::updateDownImg(Mat img)
+void guiClass::updateDownImg(const Mat& img)
 {
   resize(img,c_imgDown,c_imgDown.size());
-  int i,j;
+  int i;
   Scalar color(0,0,0);
-  for(i=0;i<GO_SIZE;i++)
+  for(i=0;i<GO_N_SPOTS;i++)
   {
-    for(j=0;j<GO_SIZE;j++)
-    {
-      if(c_stones.at<char>(i,j)==STONE_NONE){
-        color = Scalar(255,0,0);}
-      else if(c_stones.at<char>(i,j)==STONE_BLACK){
-        color = Scalar(0,255,0);}
-      else{
-        color = Scalar(0,0,255);}
-      circle( c_imgDown,
-              c_coords[i+j*GO_SIZE],
-              5,
-              color,
-              3,8,0);
-    }
+    if(c_spots[i]->getState()==STONE_NONE){
+      color = Scalar(255,0,0);}
+    else if(c_spots[i]->getState()==STONE_BLACK){
+      color = Scalar(0,255,0);}
+    else{
+      color = Scalar(0,0,255);}
+    circle( c_imgDown,
+            c_spots[i]->getCoord(),
+            5,
+            color,
+            3,8,0);
   }
-  
   c_imgDown.copyTo(c_imgFull(Rect(DOWN_IMG_X,DOWN_IMG_Y,c_imgDown.cols, c_imgDown.rows)));
   this->updateScreen();
 }
@@ -199,7 +192,7 @@ void guiClass::toogleButton(int btnID)
         // Go to configuration mode
         this->setState(STATE_CONFIGCOORDS);
         // Clear corners
-        c_ptrConfig->clearCorners();
+        c_ptrMainConfig->clearCorners();
         // Change appearance
         c_imgBtn1 = Mat(BTN1_IMG_H, BTN1_IMG_W, CV_8UC3, Scalar(0,100,0));
         putText(c_imgBtn1,"Set board coordinates", Point2f(20,20),
@@ -259,7 +252,7 @@ void guiClass::toogleButton(int btnID)
     if(!c_stateBtn3)
       {
         // Go to running mode
-        this->setState(STATE_RUNNING);
+        this->setState(STATE_STARTING);
         //change appearance
         c_imgBtn3 = Mat(BTN3_IMG_H, BTN3_IMG_W, CV_8UC3, Scalar(0,0,200));
         putText(c_imgBtn3,"Stop recognition", Point2f(20,20),
@@ -290,26 +283,22 @@ void guiClass::toogleButton(int btnID)
 
 // GET
 
-vector <Point2f> guiClass::getCorners()
+const vector <Point2f> guiClass::getCorners() const
 {
-  return c_ptrConfig->getCorners();
+  return c_ptrMainConfig->getCorners();
 }
 
-int guiClass::getState()
+int guiClass::getState() const
 {
   return c_state;
 }
 
 // SET
 
-void guiClass::setCoords(vector <Point> coords)
-{
-  c_coords.assign(coords.begin(), coords.end()); 
-}
 
 void guiClass::setCorners(vector <Point2f> corners)
 {
-  c_ptrConfig->setCorners(corners);
+  c_ptrMainConfig->setCorners(corners);
 }
 
 void guiClass::setState(int state)
@@ -348,15 +337,10 @@ void guiClass::setState(int state)
   }
 }
 
-void guiClass::setStones(Mat stones)
-{
-  stones.copyTo(c_stones);
-}
-
 
 //private
 
-void guiClass::updateScreen()
+void guiClass::updateScreen() const
 {
   imshow(c_windowName,c_imgFull);
 }

@@ -7,31 +7,55 @@
 #include <string>
 #include <time.h> 
 
+#include "typesClass.hpp"
 
 using namespace std;
 using namespace cv;
 
+configClass::configClass()
+{
+  // Initialize spots
+  for(unsigned int i=0;i<GO_SIZE*GO_SIZE;i++)
+  {
+    c_spots[i] = new Spot(i);
+  }
+  // Reserve memory
+  c_corners.reserve(4); 
+  c_params.reserve(PARAM_N);
+}
+
+configClass::~configClass()
+{
+  unsigned int i;
+  // Delete spots
+  for(i=0;i<GO_SIZE*GO_SIZE;i++)
+  {
+    delete c_spots[i];
+  }
+
+  // Delete channels
+  for(unsigned int i=0;i<c_channels.size();i++)
+  {
+    delete c_channels[i];
+  }
+
+}
+
 void configClass::init()
 {
-	// pointer to main GUI
-	//c_ptrMainGUI = ptrMainGUI;
-	c_corners.reserve(GO_SIZE*GO_SIZE); 
-	c_params.reserve(PARAM_N);
-  c_params.reserve(PARAM_N);
 	this->loadConfig();
   this->loadMapping();
 }
 
 
-void configClass::saveConfig()
+void configClass::saveConfig() const
 {
 	// OpenConfigFile
 	FILE * pFile;
-  	pFile = fopen (CONF_FILENAME,"w+");
-  	//vector <Point2f> corners = c_ptrMainGUI->getCorners();
-  	int i;
-  	
-  	if (pFile!=NULL)
+  pFile = fopen (CONF_FILENAME,"w+");
+  int i;
+
+  if (pFile!=NULL)
  	{
  		for(i=0;i<4;i++)
  		{
@@ -56,43 +80,44 @@ void configClass::loadConfig()
 
 	// OpenConfigFile
 	FILE * pFile;
-  	pFile = fopen (CONF_FILENAME,"r");
-  	int i;
-  	float x,y,tmp;
-  	char bin[50];
+	pFile = fopen (CONF_FILENAME,"r");
+	int i;
+	float x,y,tmp;
+	char bin[50];
 
-  	//clear corners
-  	c_corners.clear();
-  	c_params.clear();
-  	if (pFile!=NULL)
- 	  {
-   		for(i=0;i<4;i++)
-   		{
-   			fscanf(pFile,"%s : %f\t%f\n",bin,&x,&y);
-   			c_corners.push_back(Point2f(x,y));	
-   			//cout << x << endl;
-   		}
-   		for(i=0;i<PARAM_N;i++)
-   		{
-   			fscanf(pFile,"%s : %f\n",bin,&tmp);
-   			//cout << tmp << endl;
-   			c_params.push_back(tmp);
-   			
-   		}
-      	fclose (pFile);
-    }
-    // Else default values 
-    else
-    {
-    	c_corners.push_back(Point2f(0.1,0.1));
-    	c_corners.push_back(Point2f(0.1,0.9));
-    	c_corners.push_back(Point2f(0.9,0.9));
-    	c_corners.push_back(Point2f(0.9,0.1));
-    	c_params.push_back(1.0);
-    	c_params.push_back(0.0);
-    	c_params.push_back(0.2);
-    	c_params.push_back(0.6);
-    }	  
+	//clear corners
+	c_corners.clear();
+	c_params.clear();
+  
+	if (pFile!=NULL)
+	  {
+ 		for(i=0;i<4;i++)
+ 		{
+ 			fscanf(pFile,"%s : %f\t%f\n",bin,&x,&y);
+ 			c_corners.push_back(Point2f(x,y));	
+ 			//cout << x << endl;
+ 		}
+ 		for(i=0;i<PARAM_N;i++)
+ 		{
+ 			fscanf(pFile,"%s : %f\n",bin,&tmp);
+ 			//cout << tmp << endl;
+ 			c_params.push_back(tmp);
+ 			
+ 		}
+    	fclose (pFile);
+  }
+  // slse default values 
+  else
+  {
+  	c_corners.push_back(Point2f(0.1,0.1));
+  	c_corners.push_back(Point2f(0.1,0.9));
+  	c_corners.push_back(Point2f(0.9,0.9));
+  	c_corners.push_back(Point2f(0.9,0.1));
+  	c_params.push_back(1.0);
+  	c_params.push_back(0.0);
+  	c_params.push_back(0.2);
+  	c_params.push_back(0.6);
+  }	  
 }
 
 void configClass::loadMapping()
@@ -100,43 +125,74 @@ void configClass::loadMapping()
   // OpenConfigFile
     FILE * pFile;
     pFile = fopen (MAPP_FILENAME,"r");
-    //unsigned int channelIndexStart,channelIndexNumber;
-    //unsigned int midiStatus_spotStone,midiData_spotStone;
-    //unsigned int midiStatus_spotEmpty,midiData_spotEmpty;
 
-    unsigned int spot;//index;
-    //float x,y,tmp;
-   // char mode[50];
+    unsigned int i,j;
+    // Mapping mode
+    char mode[50];
+    // Index of first channel
+    unsigned int channelIndexStart=36;
+    // Number of channels
+    unsigned int channelIndexNumber;
+    // Midi message info when stone is present 
+    char midiStatus_spotStone[50];
+    unsigned int midiData_spotStone;
+    // Midi message info when stone is absent
+    char midiStatus_spotEmpty[50];
+    unsigned int midiData_spotEmpty;
+
+    unsigned char msg[3];
     
-
+  
     if (pFile!=NULL)
     {
       //// Read first parameter
-      fscanf(pFile,"%s ",c_mapping.mode);
-      //cout << mode<< " " <<type<< " " << tracksTot<< " " <<tracksStart <<endl;
+      fscanf(pFile,"%s ",mode);
+      
       //// Mode random : assign each spot to a random channel
-      if(strcmp(c_mapping.mode,MAPP_MODE_RAND)==0)
+      if(strcmp(mode,MAPP_MODE_RAND)==0)
       {
         // Read channels parameters
-        fscanf(pFile,"%i %i ",&(c_mapping.channelIndexStart),&(c_mapping.channelIndexNumber));
+        fscanf(pFile,"%i %i ",&channelIndexStart,&channelIndexNumber);
         // Read Midi parameters for spot with stone
-        fscanf(pFile,"%s %i ",c_mapping.midiStatus_spotStone,&(c_mapping.midiData_spotStone));
+        fscanf(pFile,"%s %i ",midiStatus_spotStone,&midiData_spotStone);
         // Read Midi parameters for spot withOUT stone
-        fscanf(pFile,"%s %i ",c_mapping.midiStatus_spotEmpty,&(c_mapping.midiData_spotEmpty));
+        fscanf(pFile,"%s %i ",midiStatus_spotEmpty,&midiData_spotEmpty);
 
-        // Init mapping size
-        c_mapping.mapping.resize(c_mapping.channelIndexNumber);
+        // Init channels
+        for(i=0; i<channelIndexNumber;i++)
+        {
+          c_channels.push_back(new Channel(i));
+          c_channels[i]->setMode(mode);
+          // Build ON message
+          msg[0] = 144;
+          msg[1] = channelIndexStart+i;
+          msg[2] = midiData_spotStone;
+          c_channels[i]->setMsgOn(msg);
+          // Build Off message
+          msg[2] = midiData_spotEmpty;
+          c_channels[i]->setMsgOff(msg);
+        }
 
         // initialize random seed
         srand (time(NULL));
         // for each spot
-        for(spot=0;spot<GO_SIZE*GO_SIZE;spot++)
+        for(i=0;i<GO_N_SPOTS;i++)
         {
           // specify it in a random channel
-          int index = rand() % c_mapping.channelIndexNumber;
-          c_mapping.mapping[index].push_back(spot);
+          int randIndex = rand() % channelIndexNumber;
+          // Assign spot to random channel
+          c_channels[randIndex]->addSpot(c_spots[i]);
+          // Assign random channel to spot
+          c_spots[i]->addChannel(c_channels[randIndex]);
         }
       }
+
+      //// Mode sequencer : TBD
+      else if(strcmp(mode,MAPP_MODE_SEQU)==0)
+      {
+        // TBD
+      }
+
       // Mode unknown: go to default
       else
       {
@@ -148,22 +204,36 @@ void configClass::loadMapping()
     // By default, assign each spot to a channel incrementally
     if (pFile==NULL)
     {
-      // Init mapping size
-      c_mapping.mapping.resize(GO_SIZE*GO_SIZE);
-      for(spot=0;spot<GO_SIZE*GO_SIZE;spot++)
+      // Init channels
+      for(i=0;i<GO_N_SPOTS;i++)
       {
-        // Assign spot to its note 
-        c_mapping.mapping[spot].push_back(spot);
+        c_channels.push_back(new Channel(i));
+        c_channels[i]->setMode((char*)"note");
+        // Build ON message
+        msg[0] = 144;
+        msg[1] = channelIndexStart+i; //36+i by default
+        msg[2] = 100;
+        c_channels[i]->setMsgOn(msg);
+        // Build Off message
+        msg[0] = 128;
+        c_channels[i]->setMsgOff(msg);
+        // Assign spot to the new channel
+        c_channels[i]->addSpot(c_spots[i]);
+        // Assign channel channel to spot
+        c_spots[i]->addChannel(c_channels[i]);
       }
     }
 
     //debug: print mapping
-    for(unsigned int index=0;index<c_mapping.mapping.size();index++)
+    for(i=0;i<c_channels.size();i++)
     {
-      cout << c_mapping.channelIndexStart+index << " : ";
-      for(spot=0;spot<c_mapping.mapping[index].size();spot++)
+      cout << c_channels[i]->getId() + channelIndexStart << " : ";
+
+      vector <Spot*> spots = c_channels[i]->getSpots();
+
+      for(j=0;j<spots.size();j++)
       {
-        cout << c_mapping.mapping[index][spot] << " ";
+        cout << spots[j]->getId() << " ";
       }
       cout << endl;
     }
@@ -171,19 +241,27 @@ void configClass::loadMapping()
 
 
 // GET
-vector <Point2f> configClass::getCorners()
+vector <Point2f> configClass::getCorners() const
 {
   return c_corners;
 }
 
-vector <float> configClass::getParams()
+vector <float> configClass::getParams() const
 {
 	return c_params;
 }
 
-mappingStruct_t configClass::getMapping()
+void configClass::getSpots(Spot** spots) const
 {
-  return c_mapping;
+  for (unsigned int i=0;i<GO_SIZE*GO_SIZE;i++)
+  {
+    spots[i]=c_spots[i];
+  }
+}
+
+vector <Channel*>  configClass::getChannels() const
+{
+  return c_channels;
 }
 
 // SET

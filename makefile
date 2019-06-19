@@ -23,8 +23,8 @@ endif
 OPTION=-Wall
 
 # Compile binary
-gb : goboard.cpp guiClass.o configClass.o processClass.o midiClass.o
-	g++ -std=c++11 ${OPTION} ${MACRO} ${INCLUDE} -o go_board_reader goboard.cpp RtMidi.cpp guiClass.o configClass.o processClass.o midiClass.o ${LIBSPATH} ${LIBS} ${FRAMEWORK}
+gb : goboard.cpp guiClass.o configClass.o processClass.o midiClass.o typesClass.o
+	g++ -std=c++11 ${OPTION} ${MACRO} ${INCLUDE} -o go_board_reader goboard.cpp RtMidi.cpp guiClass.o configClass.o processClass.o midiClass.o typesClass.o ${LIBSPATH} ${LIBS} ${FRAMEWORK}
 
 guiClass.o : guiClass.hpp guiClass.cpp
 	g++ -std=c++11 ${OPTION} ${MACRO} ${INCLUDE} -c guiClass.cpp
@@ -38,5 +38,8 @@ processClass.o : processClass.hpp processClass.cpp
 midiClass.o : midiClass.hpp midiClass.cpp
 	g++ -std=c++11 ${OPTION} ${MACRO} ${INCLUDE} -c midiClass.cpp
 
+typesClass.o : typesClass.hpp typesClass.cpp
+	g++ -std=c++11 ${OPTION} ${MACRO} ${INCLUDE} -c typesClass.cpp
+
 clean :
-	rm configClass.o guiClass.o processClass.o midiClass.o go_board_reader
+	rm *.o go_board_reader

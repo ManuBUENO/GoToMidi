@@ -55,10 +55,11 @@
 class guiClass
 {
     public:
-    //guiClass();
-    void init(std::string,configClass*);
-    void updateTopImg(cv::Mat);
-    void updateDownImg(cv::Mat);
+
+    guiClass(configClass*);
+    void init(const std::string&);//,configClass*);
+    void updateTopImg(const cv::Mat&);
+    void updateDownImg(const cv::Mat&);
     void clearImgs();
     void writeTxt(std::string, bool);
     void clearTxt();
@@ -66,24 +67,22 @@ class guiClass
     bool checkWindow();
 
     //get
-    std::vector <cv::Point2f> getCorners();
-    int getState();
+    const std::vector <cv::Point2f> getCorners() const;
+    int getState() const;
 
     //set
-    void setCoords(std::vector <cv::Point>);
     void setCorners(std::vector <cv::Point2f>);
     void setState(int);
-    void setStones(cv::Mat);
 
     private:
 
-    void updateScreen();
+    void updateScreen() const;
 
     //names
     std::string c_windowName;
     
     //ptr config
-    configClass * c_ptrConfig;
+    configClass *c_ptrMainConfig;
 
     // Images
     cv::Mat c_imgFull;
@@ -96,25 +95,23 @@ class guiClass
     cv::Point c_textPoint;
 
     //buttons
-    //cv::Rect c_recyBtn_1;
     cv::Mat c_imgBtn1;
     bool c_stateBtn1;
     
-    //cv::Rect c_recyBtn_2;
     cv::Mat c_imgBtn2;
     bool c_stateBtn2;
 
-    //cv::Rect c_recyBtn_3;
     cv::Mat c_imgBtn3;
     bool c_stateBtn3;
 
-    //State
+    // Main program state
     int c_state;
 
-    // data
-    std::vector <cv::Point> c_coords;
-    cv::Mat c_stones;
+    // Spots
+    Spot* c_spots[GO_SIZE*GO_SIZE];
 };
+
+
 
 #endif
 
