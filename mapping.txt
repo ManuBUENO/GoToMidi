@@ -1,8 +1,28 @@
-random 37 33 noteON 127 noteOFF 0
+sequencer 9x9
+144 60 100	128 60 100
+144 63 100	128 63 100
+144 65 100	128 65 100
+144 67 100	128 67 100
+153 48:52 100	137 48:52 100
+256
 
+
+
+random 9x9
+144 36+33 0
+144 36+33 127
+
+
+
+//old: random 37 33 144 127 144 0
 
 __________________
 Notes:
+
+First line format:
+	*mode* *Go height*x*Go width*
+	example: random 9x9
+
 
 First parameter:
 

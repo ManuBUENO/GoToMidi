@@ -6,6 +6,8 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/opencv.hpp" 
 #include <string>
+#include <thread>
+#include <mutex>
 
 #include "configClass.hpp"
 
@@ -64,7 +66,6 @@ class guiClass
     void writeTxt(std::string, bool);
     void clearTxt();
     void toogleButton(int);
-    bool checkWindow();
 
     //get
     const std::vector <cv::Point2f> getCorners() const;
@@ -77,12 +78,16 @@ class guiClass
     private:
 
     void updateScreen() const;
+    void guiThread();
 
     //names
     std::string c_windowName;
     
     //ptr config
     configClass *c_ptrMainConfig;
+
+    // GUI Thread
+    std::thread c_thread;
 
     // Images
     cv::Mat c_imgFull;
@@ -106,6 +111,7 @@ class guiClass
 
     // Main program state
     int c_state;
+    std::mutex c_stateMut;
 
     // Spots
     Spot* c_spots[GO_SIZE*GO_SIZE];

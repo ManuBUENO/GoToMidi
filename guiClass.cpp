@@ -58,8 +58,6 @@ void guiClass::init(const string& windowName)
 
   // Get spots
   c_ptrMainConfig->getSpots(c_spots);
-  // c_coords.reserve(GO_SIZE*GO_SIZE);
-  //c_stones = Mat::zeros(Size(GO_SIZE,GO_SIZE),CV_8U);
 
   // Init window
   namedWindow(c_windowName, CV_WINDOW_AUTOSIZE);
@@ -73,8 +71,11 @@ void guiClass::init(const string& windowName)
   c_imgBtn2.copyTo(c_imgFull(Rect(BTN2_IMG_X,BTN2_IMG_Y,c_imgBtn2.cols, c_imgBtn2.rows)));
   c_imgBtn3.copyTo(c_imgFull(Rect(BTN3_IMG_X,BTN3_IMG_Y,c_imgBtn3.cols, c_imgBtn3.rows)));
 
-  // Disp screen
-  this->updateScreen();
+  // Launch thread
+  c_thread = thread(&guiClass::guiThread, this);
+  // Detach thread since it will be killed anyway
+  c_thread.detach();
+
 }
 
 void guiClass::updateTopImg(const Mat& img)//, vector<Point2f> corners)
@@ -108,7 +109,6 @@ void guiClass::updateTopImg(const Mat& img)//, vector<Point2f> corners)
     polylines(c_imgTop, &p, &n,1, true, Scalar(0,255,0), 1, CV_AA);
   }
   c_imgTop.copyTo(c_imgFull(Rect(TOP_IMG_X,TOP_IMG_Y,c_imgTop.cols, c_imgTop.rows)));
-  this->updateScreen();
 }
 
 void guiClass::updateDownImg(const Mat& img)
@@ -131,14 +131,12 @@ void guiClass::updateDownImg(const Mat& img)
             3,8,0);
   }
   c_imgDown.copyTo(c_imgFull(Rect(DOWN_IMG_X,DOWN_IMG_Y,c_imgDown.cols, c_imgDown.rows)));
-  this->updateScreen();
 }
 
 void guiClass::clearImgs()
 {
   Mat greyScr(TOP_IMG_H+DOWN_IMG_H, TOP_IMG_W, CV_8UC3, Scalar(128,128,128));
   greyScr.copyTo(c_imgFull(Rect(TOP_IMG_X,TOP_IMG_Y,greyScr.cols, greyScr.rows)));
-  this->updateScreen();
 }
 
 void guiClass::writeTxt(string txt,bool newLine)
@@ -168,8 +166,6 @@ void guiClass::writeTxt(string txt,bool newLine)
     c_textPoint.x=TEXT_START_X;
   }
   c_imgDispText.copyTo(c_imgFull(Rect(TEXT_IMG_X,TEXT_IMG_Y,c_imgDispText.cols, c_imgDispText.rows)));
-  this->updateScreen();
-
 }
 
 void guiClass::clearTxt()
@@ -178,7 +174,6 @@ void guiClass::clearTxt()
   c_textPoint = Point2f(TEXT_START_X,TEXT_START_Y);
   c_imgDispText = Mat(TEXT_IMG_H, TEXT_IMG_W, CV_8UC3, Scalar(255,255,255));
   c_imgDispText.copyTo(c_imgFull(Rect(TEXT_IMG_X,TEXT_IMG_Y,c_imgDispText.cols, c_imgDispText.rows)));
-  this->updateScreen();
 }
 
 void guiClass::toogleButton(int btnID)
@@ -278,7 +273,6 @@ void guiClass::toogleButton(int btnID)
     default:
       break;
   }
-  this->updateScreen();
 }
 
 // GET
@@ -303,7 +297,10 @@ void guiClass::setCorners(vector <Point2f> corners)
 
 void guiClass::setState(int state)
 {
+  // lock before modifying
+  c_stateMut.lock();
   c_state = state;
+  c_stateMut.unlock();
 
   // Clear old text
   this->clearTxt();
@@ -343,6 +340,26 @@ void guiClass::setState(int state)
 void guiClass::updateScreen() const
 {
   imshow(c_windowName,c_imgFull);
+}
+
+void guiClass::guiThread()
+{
+  // Loop for update screen
+  while(c_state != STATE_KILL)
+  {
+    // Get keypress 
+    int keyCode = waitKey(1000/FRAMERATE);
+
+    // If escape is pressed, kill thread
+    if(keyCode==27)
+    {
+      this->setState(STATE_KILL);
+    }
+    // Update screen
+    this->updateScreen();
+  }
+  // Say that thread is killed 
+  this->setState(STATE_KILLED);
 }
 
 

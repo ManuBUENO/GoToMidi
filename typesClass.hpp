@@ -69,13 +69,13 @@ class Channel
     unsigned int getId() const;
     void getMode(char *) const;
     unsigned int getState() const;
-    std::vector <unsigned char> getMsg();
+    std::vector <unsigned char> getMsg(unsigned int);
     std::vector<Spot*> getSpots() const;
 
     // Set
     void setMode(char *);
-    void setMsgOn(unsigned char *);
-    void setMsgOff(unsigned char *);
+    void setMsgOn(std::vector<unsigned char>);
+    void setMsgOff(std::vector<unsigned char>);
 
     private:
     // mode

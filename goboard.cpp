@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <unistd.h>
 
 //#include <videoio.hpp>
 
@@ -20,11 +21,7 @@ using namespace std;
 
 void onMouse(int event, int x, int y, int flag, void* ptrGUI)
 {
-    /* Debug: print coordinates
-    if( event == EVENT_MOUSEMOVE )
-        cout<< "x= " << x <<" y= " << y << endl;
-    */
-
+    
     // If event is not a left button click, leave function  
     if( event != CV_EVENT_LBUTTONDOWN )
             return;
@@ -158,8 +155,10 @@ int main(int argc, char** argv)
     setMouseCallback("Go-board reader V1.0", onMouse, (void*) &mainGUI);
 
 
-    while(waitKey(1000/FRAMERATE)<0)
+    while(mainGUI.getState()!=STATE_KILLED)
     {
+        // Sleep a bit  
+        usleep(1000000/PROCESSRATE);
         // store previous image in imageOld
         imageDst.copyTo(imageOld);
         // get new image from camera
@@ -208,8 +207,12 @@ int main(int argc, char** argv)
             }
             case STATE_STARTING:
             {
-                // Reset process
-                mainProcess.reset();
+                // Start midi
+                mainMidi.start();
+
+                // Start process
+                mainProcess.start();
+                
                 // Set state to Running
                 mainGUI.setState(STATE_RUNNING);
                 break;
@@ -229,8 +232,8 @@ int main(int argc, char** argv)
                     mainProcess.checkBoardChanges();
                     // Compute channel states based on board changes
                     mainProcess.computeChannelStates();
-                    // Update channels manually
-                    mainMidi.updateChannels();
+                    //debug: activate first line only
+                    //mainProcess.activateFirstRow();
                     // Update bottom image with stones coordinates
                     mainGUI.updateDownImg(imageDst);
                 }
@@ -239,14 +242,10 @@ int main(int argc, char** argv)
             case STATE_STOPPING:
             {
                 // Channels Off
-                mainProcess.channelsOff();
+                mainProcess.stop();
 
-                // Update channels
-                if(!mainMidi.updateChannels())
-                        return -1;
-
-                // Reset process (spots + channels)
-                mainProcess.reset();
+                // Stop midi after one last iteration
+                mainMidi.stop();
 
                 // Go back to main menu    
                 mainGUI.setState(STATE_MAINMENU);
@@ -257,9 +256,8 @@ int main(int argc, char** argv)
         }
     }
     // Channels Off
-    mainProcess.channelsOff();
+    mainProcess.stop();
 
-    // Update channels
-    if(!mainMidi.updateChannels())
-            return -1;
+    // Stop midi after one last iteration
+    mainMidi.stop();
 }

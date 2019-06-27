@@ -5,36 +5,46 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include <string>
+#include <mutex>
 
 #include "typesClass.hpp"
 
-// Window delta observed on OS X targets
-#define TARGET_OSX      0
-#define TARGET_OTHER    0
 
-#if defined (__APPLE__)
-#define SOFT_TARGET     TARGET_OSX 
-#define SCREEN_DELTA_Y	3
-#else
-#define SOFT_TARGET     TARGET_OTHER 
-#define SCREEN_DELTA_Y	0
-#endif
-
+// GUI framerate
+#define FRAMERATE       10
+// Process rate
+#define PROCESSRATE     10
+// Midi rate
+#define MIDIRATE        10
 
 // Go board dimensions in cm. Change left, bottom, right, top edges and grid size
 #define GO_EDGEL_CM     4.6
 #define GO_EDGEB_CM     6.1
 #define GO_EDGER_CM     5.6
 #define GO_EDGET_CM     5.8
-
 #define GO_GRID_CM      18.5
 
-// Size of go-board
+// Size of go-board /!\ to update
 #define GO_SIZE         9
 #define GO_N_SPOTS      GO_SIZE*GO_SIZE
 
-// Application framerate. Can be changed to adapt CPU load
-#define FRAMERATE       30
+// Define metronome characteristcs 
+#define METRO_TIC    76
+#define METRO_TOC    77
+#define METRO_CHAN   9
+
+// Window delta observed on OS X targets
+#define TARGET_OSX      0
+#define TARGET_OTHER    1
+
+#if defined (__APPLE__)
+#define SOFT_TARGET     TARGET_OSX 
+#define SCREEN_DELTA_Y  3
+#else
+#define SOFT_TARGET     TARGET_OTHER 
+#define SCREEN_DELTA_Y  0
+#endif
+
 
 // Configuration file
 #define CONF_FILENAME   "config.txt"
@@ -60,12 +70,10 @@
 #define PARAM_N 		4
 
 // Mapping modes
+#define MAPP_MODE_DEFAULT "default"
 #define MAPP_MODE_RAND  "random"
 #define MAPP_MODE_SEQU  "sequencer"
 
-// Mapping types
-#define MIDI_STATUS_NOTEON  "noteON"
-#define MIDI_STATUS_NOTEOFF "noteOFF"
 
 // Application states
 #define STATE_MAINMENU      1
@@ -75,6 +83,8 @@
 #define STATE_CONFIGPARAMS  5
 #define STATE_STOPPING      6
 #define STATE_STARTING      7
+#define STATE_KILL          8
+#define STATE_KILLED        9
 
 
 
@@ -101,6 +111,8 @@ class configClass
     void clearCorners();
 
     private:
+
+    std::vector<std::vector<unsigned char>> scanMsg(FILE *);
 
     // Go_board corners
     std::vector <cv::Point2f> c_corners;

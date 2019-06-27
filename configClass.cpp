@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string>
 #include <time.h> 
+#include <cstdint>
 
 #include "typesClass.hpp"
 
@@ -123,54 +124,53 @@ void configClass::loadConfig()
 void configClass::loadMapping()
 {
   // OpenConfigFile
-    FILE * pFile;
-    pFile = fopen (MAPP_FILENAME,"r");
+  FILE * pFile;
+  pFile = fopen (MAPP_FILENAME,"r");
 
-    unsigned int i,j;
-    // Mapping mode
-    char mode[50];
-    // Index of first channel
-    unsigned int channelIndexStart=36;
-    // Number of channels
-    unsigned int channelIndexNumber;
-    // Midi message info when stone is present 
-    char midiStatus_spotStone[50];
-    unsigned int midiData_spotStone;
-    // Midi message info when stone is absent
-    char midiStatus_spotEmpty[50];
-    unsigned int midiData_spotEmpty;
 
-    unsigned char msg[3];
-    
+  // Variables initialisation
+  unsigned int i,j;
   
-    if (pFile!=NULL)
-    {
-      //// Read first parameter
-      fscanf(pFile,"%s ",mode);
-      
-      //// Mode random : assign each spot to a random channel
-      if(strcmp(mode,MAPP_MODE_RAND)==0)
-      {
-        // Read channels parameters
-        fscanf(pFile,"%i %i ",&channelIndexStart,&channelIndexNumber);
-        // Read Midi parameters for spot with stone
-        fscanf(pFile,"%s %i ",midiStatus_spotStone,&midiData_spotStone);
-        // Read Midi parameters for spot withOUT stone
-        fscanf(pFile,"%s %i ",midiStatus_spotEmpty,&midiData_spotEmpty);
+  // Mapping mode
+  char mode[50];
+  // Board size
+  Size goSize;
 
+
+  if (pFile!=NULL)
+  {
+    //// Read first line
+    // Read mapping mode
+    fscanf(pFile,"%s ",mode);
+    // Read mapping size
+    fscanf(pFile,"%ix%i\n",&(goSize.height),&(goSize.width));
+    
+    //// Mode random : assign each spot to a random channel
+    if(strcmp(mode,MAPP_MODE_RAND)==0)
+    {
+      // Declare message
+      vector<vector<unsigned char>> msgsOFF = this->scanMsg(pFile);
+      vector<vector<unsigned char>> msgsON = this->scanMsg(pFile);
+      // Check that sizes are equals
+      if(msgsON.size() != msgsOFF.size())
+      {
+        cout << "Mapping error: Number of messages should be equal !!"<<endl;
+        cout << "Check mapping.txt"<<endl;
+        cout << "Default mapping is loaded"<<endl;
+        fclose (pFile);
+        pFile=NULL;
+      }
+      else
+      {
         // Init channels
-        for(i=0; i<channelIndexNumber;i++)
+        for(i=0; i<msgsOFF.size();i++)
         {
           c_channels.push_back(new Channel(i));
           c_channels[i]->setMode(mode);
           // Build ON message
-          msg[0] = 144;
-          msg[1] = channelIndexStart+i;
-          msg[2] = midiData_spotStone;
-          c_channels[i]->setMsgOn(msg);
+          c_channels[i]->setMsgOn(msgsON[i]);
           // Build Off message
-          msg[2] = midiData_spotEmpty;
-          c_channels[i]->setMsgOff(msg);
+          c_channels[i]->setMsgOff(msgsOFF[i]);
         }
 
         // initialize random seed
@@ -179,64 +179,113 @@ void configClass::loadMapping()
         for(i=0;i<GO_N_SPOTS;i++)
         {
           // specify it in a random channel
-          int randIndex = rand() % channelIndexNumber;
+          int randIndex = rand() % msgsOFF.size();
           // Assign spot to random channel
           c_channels[randIndex]->addSpot(c_spots[i]);
           // Assign random channel to spot
           c_spots[i]->addChannel(c_channels[randIndex]);
         }
       }
-
-      //// Mode sequencer : TBD
-      else if(strcmp(mode,MAPP_MODE_SEQU)==0)
-      {
-        // TBD
-      }
-
-      // Mode unknown: go to default
-      else
-      {
-        fclose (pFile);
-        // Specify pFile as null to enter default condition
-        pFile=NULL;
-      }
     }
-    // By default, assign each spot to a channel incrementally
-    if (pFile==NULL)
+
+    //// Mode sequencer : assign lines of spots to channel
+    else if(strcmp(mode,MAPP_MODE_SEQU)==0)
     {
-      // Init channels
-      for(i=0;i<GO_N_SPOTS;i++)
+      // Read messages until end character
+      vector<vector<unsigned char>> msgs0 = this->scanMsg(pFile);
+      vector<vector<unsigned char>> msgs1;
+      unsigned int nChannels=0;
+      // For each line
+      while(msgs0.size()>0)
       {
-        c_channels.push_back(new Channel(i));
-        c_channels[i]->setMode((char*)"note");
-        // Build ON message
-        msg[0] = 144;
-        msg[1] = channelIndexStart+i; //36+i by default
-        msg[2] = 100;
-        c_channels[i]->setMsgOn(msg);
-        // Build Off message
-        msg[0] = 128;
-        c_channels[i]->setMsgOff(msg);
-        // Assign spot to the new channel
-        c_channels[i]->addSpot(c_spots[i]);
-        // Assign channel channel to spot
-        c_spots[i]->addChannel(c_channels[i]);
+        msgs1 = this->scanMsg(pFile);
+
+        if(msgs0.size() != msgs1.size())
+        {
+          cout << "Mapping error: Number of messages should be equal !!"<<endl;
+          cout << "Check mapping.txt"<<endl;
+          cout << "Default mapping is loaded"<<endl;
+          fclose (pFile);
+          pFile=NULL;
+          break;
+        }
+        else
+        {
+          // Init channels
+          for(i=0; i<msgs0.size();i++)
+          {
+            // Create new channel
+            c_channels.push_back(new Channel(nChannels));
+            // Set channel mode 
+            c_channels[nChannels]->setMode(mode);
+            // Build ON message
+            c_channels[nChannels]->setMsgOn(msgs0[i]);
+            // Build Off message
+            c_channels[nChannels]->setMsgOff(msgs1[i]);
+
+            //Assign spots to channel and vice-versa
+            for(j=0;j<(unsigned int)(goSize.width);j++)
+            {
+              unsigned int spot = goSize.width*nChannels + j;
+              c_channels[nChannels]->addSpot(c_spots[spot]);
+              c_spots[spot]->addChannel(c_channels[nChannels]);
+            }
+            // Increase channel number
+            nChannels++;
+          }
+        }
+        // Read first message for new line 
+        msgs0 = this->scanMsg(pFile);
       }
     }
 
-    //debug: print mapping
-    for(i=0;i<c_channels.size();i++)
+    // Mode unknown: go to default
+    else
     {
-      cout << c_channels[i]->getId() + channelIndexStart << " : ";
-
-      vector <Spot*> spots = c_channels[i]->getSpots();
-
-      for(j=0;j<spots.size();j++)
-      {
-        cout << spots[j]->getId() << " ";
-      }
-      cout << endl;
+      fclose (pFile);
+      // Specify pFile as null to enter default condition
+      pFile=NULL;
     }
+  }
+
+  // By default, assign each spot to a channel incrementally
+  if (pFile==NULL)
+  {
+    vector<unsigned char> msg;
+    // Init channels
+    for(i=0;i<GO_N_SPOTS;i++)
+    {
+      c_channels.push_back(new Channel(i));
+      c_channels[i]->setMode((char*)MAPP_MODE_DEFAULT);
+      // Build ON message
+      msg.clear();
+      msg.push_back(144);
+      msg.push_back(36+i); //36+i by default
+      msg.push_back(100);
+      c_channels[i]->setMsgOn(msg);
+      // Build Off message
+      msg[0] = 128;
+      c_channels[i]->setMsgOff(msg);
+      // Assign spot to the new channel
+      c_channels[i]->addSpot(c_spots[i]);
+      // Assign channel channel to spot
+      c_spots[i]->addChannel(c_channels[i]);
+    }
+  }
+
+  //debug: print mapping
+  for(i=0;i<c_channels.size();i++)
+  {
+    cout << c_channels[i]->getId() << " : ";
+
+    vector <Spot*> spots = c_channels[i]->getSpots();
+
+    for(j=0;j<spots.size();j++)
+    {
+      cout << spots[j]->getId() << " ";
+    }
+    cout << endl;
+  }
 }
 
 
@@ -273,4 +322,72 @@ void configClass::setCorners(vector <Point2f> corners)
 void configClass::clearCorners()
 {
 	c_corners.clear();
+}
+
+
+// private
+
+vector<vector<unsigned char>> configClass::scanMsg(FILE * pFile)
+{
+  // Initialise messages
+  vector<vector<unsigned char>> msgs;
+
+  // Initialise tmps
+  vector<unsigned char> bytes[3];
+  unsigned char symb;
+  unsigned int start,end;
+  unsigned int i,j,k;
+
+  // For each 3 bytes of message
+  for (i=0; i<3 ; i++)
+  {
+    // Scan byte and symbol 
+    fscanf(pFile,"%i%c",&start ,&symb);
+    // Check if first character is end character
+    if(start>255)
+    {
+      msgs.clear();
+      return msgs;
+    }
+    // Store byte in bytes list
+    bytes[i].push_back(start);
+
+    // "+" symbol means that a number of bytes is specified just after
+    if(symb=='+')
+    {
+      fscanf(pFile,"%i",&end);
+      for (j=start+1;j<(start+end);j++)
+      {
+        bytes[i].push_back(j);
+      }
+    }
+    else if(symb==':')
+    {
+      fscanf(pFile,"%i",&end);
+      for (j=start+1;j<=end;j++)
+      {
+        bytes[i].push_back(j);
+      }
+    }
+  }
+
+  // Now put all messages into the vector
+  // For each first byte
+  for (i=0; i<bytes[0].size() ; i++)
+  {
+    // For each second byte
+    for (j=0; j<bytes[1].size() ; j++)
+    {
+      // For each third byte
+      for (k=0; k<bytes[2].size() ;k++)
+      {
+        vector<unsigned char> msg;
+        msg.push_back(bytes[0][i]);
+        msg.push_back(bytes[1][j]);
+        msg.push_back(bytes[2][k]);
+        msgs.push_back(msg);
+      }
+    }
+  }
+  return msgs;
 }

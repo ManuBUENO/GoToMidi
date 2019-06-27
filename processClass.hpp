@@ -22,6 +22,8 @@ class processClass
 
     processClass(configClass *);
     void init();
+    void start();
+    void stop();
     void reset();
     cv::Mat preprocess(const cv::Mat&) const;
     void computeCoordinates(cv::Size);
@@ -30,6 +32,10 @@ class processClass
     void computeChannelStates();
     bool isMoving(const cv::Mat&,const cv::Mat&) const;
     void channelsOff();
+
+    //debug
+    void activateFirstRow();
+    
     //get
 
     private:

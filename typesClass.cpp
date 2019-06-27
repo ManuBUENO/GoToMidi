@@ -153,17 +153,21 @@ unsigned int Channel::getId() const
 	return c_id;
 }
 
+void Channel::getMode(char *mode) const
+{
+	strcpy(mode, c_mode.c_str());
+}
+
 unsigned int Channel::getState() const
 {
 	return c_state;
 }
 
-
-vector<unsigned char> Channel::getMsg()
+vector<unsigned char> Channel::getMsg(unsigned int index)
 {
 	vector<unsigned char> msg;
 	c_changed=false;
-	if(c_state==0)
+	if(index==0)
 	{
 		msg.push_back(c_msgOff[0]);
 		msg.push_back(c_msgOff[1]);
@@ -192,14 +196,14 @@ void Channel::setMode(char* mode)
 }
 
 
-void Channel::setMsgOn(unsigned char *msg)
+void Channel::setMsgOn(std::vector<unsigned char> msg)
 {
 	c_msgOn[0] = msg[0];
 	c_msgOn[1] = msg[1];
 	c_msgOn[2] = msg[2];
 }
 
-void Channel::setMsgOff(unsigned char *msg)
+void Channel::setMsgOff(std::vector<unsigned char> msg)
 {
 	c_msgOff[0] = msg[0];
 	c_msgOff[1] = msg[1];

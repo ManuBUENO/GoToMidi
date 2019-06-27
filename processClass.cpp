@@ -29,6 +29,19 @@ void processClass::init()
 
 }
 
+void processClass::start()
+{
+  // Reset stones and channels
+  this->reset();
+}
+
+void processClass::stop()
+{
+  // Set channels to OFF
+  this->channelsOff();
+}
+
+
 // Revert variables to initial state
 void processClass::reset()
 {
@@ -204,52 +217,78 @@ void processClass::computeChannelStates()
   unsigned int i,j,sum;
   vector <Channel*> impactedChannels;
 
-  // WARNING MAPPING MODE TO IMPLEMENT
-
-   // Find all impacted channels
+  // Find all impacted channels
   for(i=0;i<GO_N_SPOTS;i++)
   {
     if(c_spots[i]->isChanged())
     {
-      //cout << "Spot " <<c_spots[i]->getId()<< " changed"<<endl;
       // Get channels from spot
       vector <Channel*> spotChannels = c_spots[i]->getChannels();
       // Add them to impacted channels list
       impactedChannels.insert(impactedChannels.end(),spotChannels.begin(),spotChannels.end());
     }
   }
-
-  // CASE RANDOM
+  // For each impacted channels
+  for(i=0;i<impactedChannels.size();i++)
   {
-    // For each impacted channels
-    for(i=0;i<impactedChannels.size();i++)
+    // Check mode
+    char mode[50];
+    impactedChannels[i]->getMode(mode);
+    // Random or default mode
+    if(strcmp(mode,MAPP_MODE_RAND)==0 || strcmp(mode,MAPP_MODE_DEFAULT)==0)
     {
-      
       // Get spots from channel
       vector <Spot*> channelSpots = impactedChannels[i]->getSpots();
       // Sum spot states
       sum=0;
       for(j=0;j<channelSpots.size();j++)
       {
-       // cout << "spot " << channelSpots[j]->getId()<<" state = "<< channelSpots[j]->getState()<<endl;
-        sum += channelSpots[j]->getState();
+       sum += channelSpots[j]->getState();
       }
-
       // No stone and channel ON --> channel OFF
       if(sum==0 && impactedChannels[i]->getState()==1)
       {
         impactedChannels[i]->updateState(0); // channel OFF
-        //cout << "channel " <<impactedChannels[i]->getId()<<" OFF"<<endl;
       }
       // Stones present and channel off --> channel ON
       else if (sum>0 && impactedChannels[i]->getState()==0)
       {
         impactedChannels[i]->updateState(1); // channel ON
-        //cout << "channel " <<impactedChannels[i]->getId()<<" ON"<<endl;
+      }
+    }
+
+    // Sequencer mode
+    else if(strcmp(mode,MAPP_MODE_SEQU)==0)
+    {
+      // Get spots from channel
+      vector <Spot*> channelSpots = impactedChannels[i]->getSpots();
+      // If first stone is present: channel OFF / mute
+      if(channelSpots[0]->getState()!=STONE_NONE)
+      {
+        impactedChannels[i]->updateState(0); // channel OFF
+      }
+      // Channel state = binary word. One bit is the state of one spot
+      else
+      {
+        unsigned int state=0;
+        for(j=0;j<channelSpots.size()-1;j++)
+        {
+          // Stone color is not handled
+          if(channelSpots[j+1]->getState()>0)
+          state += 0x01 << j;
+        }
+        impactedChannels[i]->updateState(state);
       }
     }
   }
 }
+
+// Depending on mapping, define midi channels states
+void processClass::activateFirstRow()
+{
+  c_channels[0]->updateState(0xFF);
+}
+
 
 void processClass::channelsOff()
 {
