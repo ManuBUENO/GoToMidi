@@ -13,10 +13,10 @@ ifeq ($(UNAME),Linux)
 else ifeq ($(UNAME),Darwin)
 	# Set OSX options
 	# Please change paths depending on where your libraries are.
-	INCLUDE=-I/Users/bruno/usr/homebrew/Cellar/opencv@2/2.4.13.7_3/include/opencv -I/Users/bruno/usr/homebrew/Cellar/opencv@2/2.4.13.7_3/include
+	INCLUDE=-I/usr/local/Cellar/opencv@2/2.4.13.7_3/include/
 	MACRO=-D__MACOSX_CORE__ -D__RTMIDI_DEBUG__
 	FRAMEWORK=-framework coreMIDI -framework CoreAudio -framework CoreFoundation
-	LIBSPATH=-L/Users/bruno/usr/homebrew/Cellar/opencv@2/2.4.13.7_3/lib
+	LIBSPATH=-L/usr/local/Cellar/opencv@2/2.4.13.7_3/lib
 	LIBS=-lopencv_calib3d -lopencv_contrib -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_gpu -lopencv_highgui -lopencv_imgproc -lopencv_legacy -lopencv_ml -lopencv_nonfree -lopencv_objdetect -lopencv_ocl -lopencv_photo -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videostab
 endif
 
