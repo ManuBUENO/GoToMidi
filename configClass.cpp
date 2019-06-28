@@ -199,8 +199,7 @@ void configClass::loadMapping()
       while(msgs0.size()>0)
       {
         msgs1 = this->scanMsg(pFile);
-
-        if(msgs0.size() != msgs1.size())
+        if((msgs0.size() != msgs1.size()) && msgs1.size()!=0)
         {
           cout << "Mapping error: Number of messages should be equal !!"<<endl;
           cout << "Check mapping.txt"<<endl;
@@ -221,7 +220,8 @@ void configClass::loadMapping()
             // Build ON message
             c_channels[nChannels]->setMsgOn(msgs0[i]);
             // Build Off message
-            c_channels[nChannels]->setMsgOff(msgs1[i]);
+            if(msgs1.size()!=0)
+              c_channels[nChannels]->setMsgOff(msgs1[i]);
 
             //Assign spots to channel and vice-versa
             for(j=0;j<(unsigned int)(goSize.width);j++)

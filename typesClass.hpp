@@ -22,6 +22,9 @@ class Spot
     void revertState();
     bool isChanged() const;
     void addChannel(Channel*);
+    void brighten();
+    void darken();
+    bool isBright() const; 
 
     //get
     unsigned int getId() const;
@@ -29,6 +32,7 @@ class Spot
     cv::Point getCoord() const;
     cv::Point2i getPos() const;
     std::vector<Channel*> getChannels() const;
+
 
     //set
     void setCoord(cv::Point2f);
@@ -50,6 +54,8 @@ class Spot
     bool c_changed;
     // Stability
     int c_stability;
+    // Illuminate
+    bool c_bright; 
     // Associated channels 
     std::vector<Channel*> c_channels ;
 };
@@ -71,6 +77,7 @@ class Channel
     unsigned int getState() const;
     std::vector <unsigned char> getMsg(unsigned int);
     std::vector<Spot*> getSpots() const;
+    Spot* getSpot(int) const;
 
     // Set
     void setMode(char *);

@@ -14,7 +14,8 @@ Spot::Spot(unsigned int id)
 	c_coord = Point2f(-1.0,-1.0);
 	c_state = STONE_NONE;
 	c_changed = false;
-	c_stability=0;
+	c_stability = 0;
+	c_bright = false;
 }
 
 // Reset states and stability
@@ -24,6 +25,7 @@ void Spot::reset()
 	c_state_old = STONE_NONE;
 	c_changed = false;
 	c_stability = 0;
+	c_bright = false;
 }
 
 void Spot::updateState(unsigned int state)
@@ -56,6 +58,21 @@ bool Spot::isChanged() const
 void Spot::addChannel(Channel* channel)
 {
 	c_channels.push_back(channel);
+}
+
+void Spot::brighten()
+{
+	c_bright=true;
+}
+
+void Spot::darken()
+{
+	c_bright=false;
+}
+
+bool Spot::isBright() const
+{
+	return c_bright;
 }
 
 // GET
@@ -111,6 +128,9 @@ Channel::Channel(unsigned int id)
 	c_id = id;
 	c_state = 0;
 	c_changed = false;
+	vector<unsigned char> msg {0,0,0};
+	this->setMsgOn(msg);
+	this->setMsgOff(msg);
 }
 
 // Reset states and stability
@@ -169,12 +189,18 @@ vector<unsigned char> Channel::getMsg(unsigned int index)
 	c_changed=false;
 	if(index==0)
 	{
+		// If status=0, msg empty
+		if(c_msgOff[0]==0)
+			return msg;
 		msg.push_back(c_msgOff[0]);
 		msg.push_back(c_msgOff[1]);
 		msg.push_back(c_msgOff[2]);
 	}
 	else
 	{
+		// If status=0, msg empty
+		if(c_msgOn[0]==0)
+			return msg;
 		msg.push_back(c_msgOn[0]);
 		msg.push_back(c_msgOn[1]);
 		msg.push_back(c_msgOn[2]);
@@ -188,6 +214,11 @@ std::vector<Spot*> Channel::getSpots() const
 	return c_spots;
 }
 
+Spot* Channel::getSpot(int id) const
+{
+	return c_spots[id];
+}
+
 // Set
 
 void Channel::setMode(char* mode)
@@ -196,16 +227,35 @@ void Channel::setMode(char* mode)
 }
 
 
-void Channel::setMsgOn(std::vector<unsigned char> msg)
+void Channel::setMsgOn(vector<unsigned char> msg)
 {
-	c_msgOn[0] = msg[0];
-	c_msgOn[1] = msg[1];
-	c_msgOn[2] = msg[2];
+	if(msg.size()==0)
+	{
+		//cout << "Error while rading Mapping.txt. First message not specified" <<endl;
+		c_msgOn[0] = 0;
+		c_msgOn[1] = 0;
+		c_msgOn[2] = 0;
+	}
+	else
+	{
+		c_msgOn[0] = msg[0];
+		c_msgOn[1] = msg[1];
+		c_msgOn[2] = msg[2];
+	}
 }
 
-void Channel::setMsgOff(std::vector<unsigned char> msg)
+void Channel::setMsgOff(vector<unsigned char> msg)
 {
-	c_msgOff[0] = msg[0];
-	c_msgOff[1] = msg[1];
-	c_msgOff[2] = msg[2];
+	if(msg.size()==0)
+	{
+		c_msgOff[0] = 0;
+		c_msgOff[1] = 0;
+		c_msgOff[2] = 0;
+	}
+	else
+	{
+		c_msgOff[0] = msg[0];
+		c_msgOff[1] = msg[1];
+		c_msgOff[2] = msg[2];
+	}
 }

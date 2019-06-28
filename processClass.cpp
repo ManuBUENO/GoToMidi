@@ -283,13 +283,6 @@ void processClass::computeChannelStates()
   }
 }
 
-// Depending on mapping, define midi channels states
-void processClass::activateFirstRow()
-{
-  c_channels[0]->updateState(0xFF);
-}
-
-
 void processClass::channelsOff()
 {
   for(unsigned int i=0;i<c_channels.size();i++)

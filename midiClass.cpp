@@ -90,7 +90,7 @@ void midiClass::start()
   }
   else if(strcmp(mode,MAPP_MODE_SEQU)==0)
   {
-  	cout << "Ready !" <<endl;
+  	//cout << "Ready !" <<endl;
     // Activate midi callback
     this->setSeqState(SEQ_STATE_READY);
   } 
@@ -137,14 +137,8 @@ bool midiClass::updateChannels()
     	message=c_channels[i]->getMsg(c_channels[i]->getState());
 
     	// Send this message
-			try {
-			c_midiOut->sendMessage( &message );
-			}
-			catch ( RtMidiError &error ) {
-			error.printMessage();
-			cout << "Virtual Midi port down" <<endl;
-			return false;
-			}
+    	if(message.size()>0)
+				c_midiOut->sendMessage( &message );
 		}
 	}
 	return true;
@@ -194,18 +188,32 @@ void midiClass::manageSequencer(vector< unsigned char > *msgIn )
 	  			message=c_channels[i]->getMsg(0);
 	  		}
 	    	// Send this message
-				c_midiOut->sendMessage( &message );
+	    	if(message.size()>0)
+					c_midiOut->sendMessage( &message );
 	  	}
 	  }
+
 		// At each metronome NoteOff
 		if(msgIn->at(0) == (MIDI_NOTEOFF + METRO_CHAN) )
 		{
-			cout << c_seqState+1 <<endl;
-		  // Increase counter
+			//cout << c_seqState+1 <<endl;
+			int oldSeqState = c_seqState;
+			// Increase counter
 		  this->setSeqState(c_seqState+1);
 	  	// Reset counter if needed
 		  if(c_seqState>=GO_SIZE-1)
 		  	 this->setSeqState(0);
+
+			// Darken previous column
+			// For each channel : bright active spots
+	  	for(i=0;i<c_channels.size();i++)
+	  	{
+	  		// Get spot 
+	  		Spot* spot = c_channels[i]->getSpot(c_seqState+1);
+	  		spot->brighten();
+	  		spot = c_channels[i]->getSpot(oldSeqState+1);
+				spot->darken();
+			}
 		}
 	}
 }

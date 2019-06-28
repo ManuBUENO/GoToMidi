@@ -32,9 +32,6 @@ class processClass
     void computeChannelStates();
     bool isMoving(const cv::Mat&,const cv::Mat&) const;
     void channelsOff();
-
-    //debug
-    void activateFirstRow();
     
     //get
 

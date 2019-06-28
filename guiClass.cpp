@@ -114,16 +114,20 @@ void guiClass::updateTopImg(const Mat& img)//, vector<Point2f> corners)
 void guiClass::updateDownImg(const Mat& img)
 {
   resize(img,c_imgDown,c_imgDown.size());
-  int i;
+  int i,brightness;
+  int state; 
+  
   Scalar color(0,0,0);
   for(i=0;i<GO_N_SPOTS;i++)
   {
-    if(c_spots[i]->getState()==STONE_NONE){
-      color = Scalar(255,0,0);}
-    else if(c_spots[i]->getState()==STONE_BLACK){
-      color = Scalar(0,255,0);}
+    brightness = c_spots[i]->isBright()?255:150;
+    state =c_spots[i]->getState();
+    if(state==STONE_NONE){
+      color = Scalar(brightness,0,0);}
+    else if(state==STONE_BLACK){
+      color = Scalar(0,brightness,0);}
     else{
-      color = Scalar(0,0,255);}
+      color = Scalar(0,0,brightness);}
     circle( c_imgDown,
             c_spots[i]->getCoord(),
             5,

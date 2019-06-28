@@ -11,7 +11,7 @@
 
 
 // GUI framerate
-#define FRAMERATE       10
+#define FRAMERATE       30
 // Process rate
 #define PROCESSRATE     10
 // Midi rate
