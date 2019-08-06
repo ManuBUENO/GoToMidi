@@ -190,7 +190,7 @@ void processClass::checkBoardChanges()
   }
 
   // Too much changes
-  if(changedSpots.size()>1 && c_iterSinceValid<FRAMERATE)
+  if(changedSpots.size()>1 && c_iterSinceValid<PROCESSRATE)
   {
     // Too much stones changed, not possible
     // Revert all spots to previous state

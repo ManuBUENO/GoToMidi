@@ -352,6 +352,7 @@ void guiClass::guiThread()
   while(c_state != STATE_KILL)
   {
     // Get keypress 
+    //cout <<"coucou"<<endl;
     int keyCode = waitKey(1000/FRAMERATE);
 
     // If escape is pressed, kill thread

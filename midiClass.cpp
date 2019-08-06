@@ -223,10 +223,23 @@ void midiClass::midiThread()
   // Loop
   do 
   {
-  	// Sleep a bit  
-    usleep(1000000/MIDIRATE);
-  	// updateChannels
-    this->updateChannels();
+  	// Depending on mode, launch midi thread / callback
+	  // Only one mode at a time for now. So check only first channels
+	  // Check mode
+	  char mode[50];
+	  c_channels[0]->getMode(mode);
+	  // Random or default mode
+	  if(strcmp(mode,MAPP_MODE_RAND)==0 || strcmp(mode,MAPP_MODE_DEFAULT)==0)
+	  {
+	  	// Sleep a bit  
+	    usleep(1000000/MIDIRATE);
+	  	// updateChannels
+	    this->updateChannels();
+	  }
+	 /* else if (strcmp(mode,MAPP_MODE_SEQU)==0)
+	  {
+	  	this->manageSequencer();
+	  }*/
   } while(c_threadStatus != STATE_KILL);
 }
 
@@ -236,6 +249,21 @@ void midiClass::midiCallback(double deltaTime, vector< unsigned char > *msg, voi
   midiClass* midiClassPtr = (midiClass *) voidPtr;
 	if(midiClassPtr->getSeqState()!= SEQ_STATE_DEAD)
 	{
+		// Read msg
+		// If msg==tic & ON
+			// read clock
+
+			//if ready
+				//If c_clock=0,
+					//c_clock=clock
+				//else
+					//c_period=(clock-c_clock/4
+					//c_clock=clock
+			    //state=0 //go
+		  // else if state>running
+
+
+
 		midiClassPtr->manageSequencer(msg);
 	}
 }

@@ -232,8 +232,6 @@ int main(int argc, char** argv)
                     mainProcess.checkBoardChanges();
                     // Compute channel states based on board changes
                     mainProcess.computeChannelStates();
-                    //debug: activate first line only
-                    //mainProcess.activateFirstRow();
                     // Update bottom image with stones coordinates
                     mainGUI.updateDownImg(imageDst);
                 }

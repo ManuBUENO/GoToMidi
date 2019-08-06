@@ -35,7 +35,6 @@ class midiClass
 
     private:
 
-     
     void manageSequencer(std::vector< unsigned char > *msg );
     void midiThread();
     static void midiCallback(double, std::vector< unsigned char > *, void *);
@@ -46,8 +45,6 @@ class midiClass
     // Midi ports
     RtMidiOut *c_midiOut;
     RtMidiIn *c_midiIn;
-
-
 
     // Midi Thread
     std::thread c_thread;
