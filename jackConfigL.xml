@@ -1,54 +1,54 @@
 <!DOCTYPE patchbay>
 <patchbay version="0.4.2" name="jackConfigL">
  <output-sockets>
-  <socket client="a2j" exclusive="off" type="jack-midi" name="Qtractor_metro">
-   <plug>Qtractor \[130\] \(capture\): Metronome</plug>
+  <socket exclusive="off" type="jack-midi" client="a2j" name="Qtractor_control">
+   <plug>Qtractor \[130\] \(capture\): Control</plug>
   </socket>
-  <socket client="RtMidi Output Client" exclusive="off" type="jack-midi" name="GO_MIDI_OUT">
+  <socket exclusive="off" type="jack-midi" client="RtMidi Output Client" name="GO_MIDI_OUT">
    <plug>MIDI_GO_OUT</plug>
   </socket>
-  <socket client="Midi Through" exclusive="off" type="jack-midi" name="Through Jack">
+  <socket exclusive="off" type="jack-midi" client="Midi Through" name="Through Jack">
    <plug>Midi Through Port-0</plug>
   </socket>
-  <socket client="MPK Mini Mk II" exclusive="off" type="alsa-midi" name="AKAI">
+  <socket exclusive="off" type="alsa-midi" client="MPK Mini Mk II" name="AKAI">
    <plug>MPK Mini Mk II MIDI 1</plug>
   </socket>
-  <socket client="Qtractor" exclusive="off" type="jack-audio" name="Qtractor Audio Master">
+  <socket exclusive="off" type="jack-audio" client="Qtractor" name="Qtractor Audio Master">
    <plug>Master/out_1</plug>
    <plug>Master/out_2</plug>
   </socket>
-  <socket client="PulseAudio JACK Sink" exclusive="off" type="jack-audio" name="Audio Jack Sink">
+  <socket exclusive="off" type="jack-audio" client="PulseAudio JACK Sink" name="Audio Jack Sink">
    <plug>front-left</plug>
    <plug>front-right</plug>
   </socket>
  </output-sockets>
  <input-sockets>
-  <socket client="RtMidi Input Client" exclusive="off" type="jack-midi" name="GO_MIDI_METRO">
+  <socket exclusive="off" type="jack-midi" client="RtMidi Input Client" name="GO_MIDI_METRO">
    <plug>MIDI_GO_IN</plug>
   </socket>
-  <socket client="a2j" exclusive="off" type="jack-midi" name="Qtractor_Master">
+  <socket exclusive="off" type="jack-midi" client="a2j" name="Qtractor_Master">
    <plug>Qtractor \[130\] \(playback\): Master</plug>
   </socket>
-  <socket client="RtMidi Input Client" exclusive="off" type="jack-midi" name="Midi Monitor">
+  <socket exclusive="off" type="jack-midi" client="RtMidi Input Client" name="Midi Monitor">
    <plug>RtMidi Input</plug>
   </socket>
-  <socket client="Midi Through" exclusive="off" type="alsa-midi" name="Through Alsa">
+  <socket exclusive="off" type="alsa-midi" client="Midi Through" name="Through Alsa">
    <plug>Midi Through Port-0</plug>
   </socket>
-  <socket client="system" exclusive="off" type="jack-audio" name="system Audio Out">
+  <socket exclusive="off" type="jack-audio" client="system" name="system Audio Out">
    <plug>playback_1</plug>
    <plug>playback_2</plug>
   </socket>
  </input-sockets>
  <slots/>
  <cables>
-  <cable type="jack-midi" input="GO_MIDI_METRO" output="Qtractor_metro"/>
-  <cable type="jack-midi" input="Qtractor_Master" output="GO_MIDI_OUT"/>
-  <cable type="jack-midi" input="Midi Monitor" output="Through Jack"/>
-  <cable type="jack-midi" input="Qtractor_Master" output="Through Jack"/>
-  <cable type="alsa-midi" input="Through Alsa" output="AKAI"/>
-  <cable type="jack-audio" input="system Audio Out" output="Qtractor Audio Master"/>
-  <cable type="jack-audio" input="system Audio Out" output="Audio Jack Sink"/>
+  <cable output="Qtractor_control" input="GO_MIDI_METRO" type="jack-midi"/>
+  <cable output="GO_MIDI_OUT" input="Qtractor_Master" type="jack-midi"/>
+  <cable output="Through Jack" input="Midi Monitor" type="jack-midi"/>
+  <cable output="Through Jack" input="Qtractor_Master" type="jack-midi"/>
+  <cable output="AKAI" input="Through Alsa" type="alsa-midi"/>
+  <cable output="Qtractor Audio Master" input="system Audio Out" type="jack-audio"/>
+  <cable output="Audio Jack Sink" input="system Audio Out" type="jack-audio"/>
  </cables>
 </patchbay>
 

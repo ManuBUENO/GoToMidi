@@ -356,7 +356,7 @@ vector<vector<unsigned char>> configClass::scanMsg(FILE * pFile)
     if(symb=='+')
     {
       fscanf(pFile,"%i",&end);
-      for (j=start+1;j<(start+end);j++)
+      for (j=start+1;j<=(start+end);j++)
       {
         bytes[i].push_back(j);
       }

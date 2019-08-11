@@ -6,6 +6,9 @@ sequencer 9x9
 153 48:52 100	137 48:52 100
 256
 
+"EOF"
+
+Saved configurations:
 
 random 9x9
 144 36+33 0
@@ -14,42 +17,52 @@ random 9x9
 128 60 100
 
 
-//old: random 37 33 144 127 144 0
-
 __________________
 Notes:
 
 First line format:
 	*mode* *Go height*x*Go width*
-	example: random 9x9
+	example: sequencer 9x9
+
+	Accepted modes:
+		- "random": assigns randomly a go spot to a couple of specified Midi messages.
+		First Midi message line corresponds to the messages sent when a stone is placed on a spot.
+		Second Midi message line corresponds to the messages sent when a stone is removed from the spot.
+		But this is bullshit, it needs to be enhanced
 
 
-First parameter:
+		- "sequencer": Each Go line is assigned to one or two midi messages. Each Go column represents one eighth note. Columns are scanned one by one at an eighth note rate from left to right. 
+		If a stone is present on a spot, the first message assigned to the line is sent. If no stone is present on the spot, well, nothing happens for now .. In fact the second message is not used yet.
+		But this is bullshit, it needs to be enhanced
 
-		"random": random mapping mode. Each Go spot is associated to one channel randomly
+		No internal tempo is provided, the tempo must be provided by a midi instrument/daw/... using Midi clock + control (start and stop).
 
-				2nd parameter:
-						Index of first channel
+		- "default": Each Go spot is assigned to a Midi message :
+		Channel 0 ; noteOn ; note 36(C2), 37(C#2), 38(D2), .. for each spot  ; velocity 100
 
-				3rd parameter:
-						Number of channels
-
-				4th parameter:
-						Midi Status to send when stone is present
-
-				5th parameter:
-						Midi last data byte to send when stone is present
-
-				6th parameter:
-						Midi Status to send when NO stone is present
-
-				7th parameter:
-						Midi last data byte to send when stone is present
+		Accepted Go size:
+			Only 9x9 for now !
 
 
-// 127 MUTES
+Next lines -> Midi messages
 
-// 0   UNMUTES
+	How to write a midi message:
+	-	One message only:
+			*status byte* *first data byte* *second data byte*
+			Ex: "144 36 100" corresponds to a noteON message on channel 0, note 36 (C2), velocity 100
 
-// config lycée (communion): random 37 ? noteON 0 noteOFF 127
-// config lycée (communion): random 37 ? noteON 127 noteOFF 0
+	- mutiple messages: 
+			For each byte, operators "+"" and ":"" can be used
+			Ex: 144+2 36:38 100
+					gives the following list of messages:
+					144 36 100
+					144 37 100
+					144 38 100
+					145 36 100
+					145 37 100
+					145 38 100
+					
+
+
+
+

@@ -5,11 +5,12 @@ UNAME := $(shell uname)
 ifeq ($(UNAME),Linux)
 	# Set Linux options
 	# Please change paths depending on where your libraries are.
-	INCLUDE=-I/usr/local/include/rtmidi/ -I/usr/include/opencv
-	MACRO=-D__UNIX_JACK__ -D__RTMIDI_DEBUG__
+	INCLUDE= `pkg-config rtmidi opencv --cflags`
+	MACRO= 
 	FRAMEWORK=
-	LIBSPATH=-L/usr/lib/x86_64-linux-gnu/
-	LIBS=-lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_ml -lopencv_video -lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_contrib -lopencv_legacy -lopencv_flann -lm -lpthread -ljack
+	LIBSPATH=
+	LIBS=`pkg-config jack rtmidi opencv --libs`
+
 else ifeq ($(UNAME),Darwin)
 	# Set OSX options
 	# Please change paths depending on where your libraries are.
@@ -23,8 +24,8 @@ endif
 OPTION=-Wall
 
 # Compile binary
-gb : goboard.cpp guiClass.o configClass.o processClass.o midiClass.o typesClass.o
-	g++ -std=c++11 ${OPTION} ${MACRO} ${INCLUDE} -o go_board_reader goboard.cpp RtMidi.cpp guiClass.o configClass.o processClass.o midiClass.o typesClass.o ${LIBSPATH} ${LIBS} ${FRAMEWORK}
+gb : main.cpp guiClass.o configClass.o processClass.o midiClass.o typesClass.o
+	g++ -std=c++11 ${OPTION} ${MACRO} ${INCLUDE} -o goToMidi main.cpp RtMidi.cpp guiClass.o configClass.o processClass.o midiClass.o typesClass.o ${LIBSPATH} ${LIBS} ${FRAMEWORK}
 
 guiClass.o : guiClass.hpp guiClass.cpp
 	g++ -std=c++11 ${OPTION} ${MACRO} ${INCLUDE} -c guiClass.cpp
@@ -42,4 +43,4 @@ typesClass.o : typesClass.hpp typesClass.cpp
 	g++ -std=c++11 ${OPTION} ${MACRO} ${INCLUDE} -c typesClass.cpp
 
 clean :
-	rm *.o go_board_reader
+	rm *.o goToMidi
